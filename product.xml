@@ -28,6 +28,7 @@
 
 			<dep product="accmodel-jmad-models-lhctransfer" version="PRO" />
 
+			<dep product="mockito-core" local="true" excluded="true" version="PRO" />
 			<dep product="junit" local="true" excluded="true" version="PRO" />
 			<dep product="assertj-core" local="true" excluded="true" version="PRO" />
 		</dependencies>
@@ -35,7 +36,7 @@
 		<exclusions>
 			<dep artifactId="slf4j-log4j12" groupId="org.slf4j" />
 			<dep artifactId="log4j" groupId="log4j" />
-			<dep artifactId="spring-boot-starter-logging" groupId="org.springframework.boot"/>
+			<dep artifactId="spring-boot-starter-logging" groupId="org.springframework.boot" />
 		</exclusions>
 
 	</product>
