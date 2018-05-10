@@ -15,8 +15,6 @@ import org.jmad.modelpack.service.gitlab.domain.Tag;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import cern.accsoft.commons.util.MockitoUtil;
-
 public class ModelPackagesTest {
 
     @Test

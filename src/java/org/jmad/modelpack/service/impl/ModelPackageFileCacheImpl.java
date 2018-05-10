@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.http.annotation.GuardedBy;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.service.ModelPackageFileCache;
 import org.slf4j.Logger;
@@ -24,6 +23,8 @@ import cern.accsoft.steering.jmad.util.StreamUtil;
 import cern.accsoft.steering.jmad.util.TempFileUtil;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import javax.annotation.concurrent.GuardedBy;
 
 public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 

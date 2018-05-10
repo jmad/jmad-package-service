@@ -1,8 +1,12 @@
-bin
-*.log
-build
-.gradle
 .settings
-.project
 .classpath
+.project
+.gradle
+bin
+out
+build
+cbng*
+fort*
+*.data
+*.log
 
