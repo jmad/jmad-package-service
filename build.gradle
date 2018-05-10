@@ -7,7 +7,7 @@ repositories { mavenCentral() }
 
 dependencies {
     compile group: 'org.jmad', name: 'jmad-core', version: '0.0.0'
-
+    
     compile group: 'org.springframework', name: 'spring-core', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-aop', version: '5.0.6.RELEASE'

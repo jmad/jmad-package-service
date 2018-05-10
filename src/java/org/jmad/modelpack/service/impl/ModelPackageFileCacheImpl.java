@@ -24,7 +24,6 @@ import cern.accsoft.steering.jmad.util.TempFileUtil;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.concurrent.GuardedBy;
 
 public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 
@@ -41,7 +40,6 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
      * <p>
      * ... Concurrency issues within different processes is another story and is not yet adressed.
      */
-    @GuardedBy("packageFiles")
     private Map<ModelPackageVariant, File> packageFiles = new HashMap<>();
 
     public ModelPackageFileCacheImpl(TempFileUtil tempFileUtil) {
