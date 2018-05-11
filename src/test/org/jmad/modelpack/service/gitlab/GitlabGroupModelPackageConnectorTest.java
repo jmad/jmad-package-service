@@ -10,8 +10,6 @@ import static org.jmad.modelpack.JMadModelRepositories.cernGitlabTesting;
 import java.util.List;
 
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.gitlab.GitlabGroupModelPackageConnector;
-import org.jmad.modelpack.service.gitlab.GitlabModelPackageRepository;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -7,7 +7,6 @@ package org.jmad.modelpack.domain;
 import static java.util.function.Function.identity;
 
 import java.util.Comparator;
-import java.util.function.Function;
 
 import org.jmad.modelpack.service.gitlab.domain.Release;
 import org.jmad.modelpack.service.gitlab.domain.Tag;

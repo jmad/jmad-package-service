@@ -4,9 +4,7 @@
 
 package org.jmad.modelpack.domain;
 
-import static org.jmad.modelpack.domain.ModelPackages.packageVariantComparator;
 import static org.jmad.modelpack.domain.ModelPackages.variantComparator;
-import static org.junit.Assert.*;
 
 import org.assertj.core.api.Assertions;
 import org.jmad.modelpack.service.gitlab.domain.Commit;
