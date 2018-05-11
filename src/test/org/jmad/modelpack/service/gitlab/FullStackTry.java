@@ -56,7 +56,7 @@ public class FullStackTry {
 
         LOGGER.info("Opening model from definition: {}.", def);
         JMadModel model = jmadService.createModel(def);
-
+        
         TfsSummary ts = model.calcTwissSummary();
         LOGGER.info("Twiss summary for model {}: {}.", model, ts);
 
