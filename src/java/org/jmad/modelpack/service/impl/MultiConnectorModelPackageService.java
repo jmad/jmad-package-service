@@ -13,10 +13,12 @@ import javax.annotation.PostConstruct;
 
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.service.DirectModelPackageConnector;
 import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.ModelPackageConnector;
 import org.jmad.modelpack.service.ModelPackageFileCache;
 import org.jmad.modelpack.service.ModelPackageRepositoryProvider;
+import org.jmad.modelpack.service.ZipModelPackageConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,23 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
 
     @Override
     public Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage) {
+        return definitionsFromDirect(modelPackage).switchIfEmpty(definitiionsFromFile(modelPackage));
+    }
+
+    private Flux<JMadModelDefinition> definitionsFromDirect(ModelPackageVariant modelPackage) {
+        // @formatter:off
+        List<Flux<JMadModelDefinition>> directStreams = 
+                connectors.stream()
+                .filter(c -> c instanceof DirectModelPackageConnector)
+                .map(c -> (DirectModelPackageConnector)c)
+                .map(c -> c.modelDefinitionsFor(modelPackage))
+                .collect(toList());
+        // @formatter:on
+
+        return Flux.merge(directStreams);
+    }
+
+    private Flux<JMadModelDefinition> definitiionsFromFile(ModelPackageVariant modelPackage) {
         // @formatter:off
         return cache.fileFor(modelPackage, this::zipResourceFrom)
                 .flatMapMany(this::modelDefinitionsFrom);
@@ -66,6 +85,8 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
         // @formatter:off
         List<Mono<Resource>> connectorStreams = 
                 connectors.stream()
+                .filter(c -> c instanceof ZipModelPackageConnector)
+                .map(c -> (ZipModelPackageConnector)c)
                 .map(c -> c.zipResourceFor(modelPackage))
                 .collect(toList());
         // @formatter:on

@@ -10,6 +10,7 @@ import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
 import org.jmad.modelpack.service.ModelPackageConnector;
+import org.jmad.modelpack.service.ZipModelPackageConnector;
 import org.jmad.modelpack.service.gitlab.domain.Branch;
 import org.jmad.modelpack.service.gitlab.domain.Tag;
 import org.jmad.modelpack.service.gitlab.internals.GitlabBranch;
@@ -24,7 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class GitlabGroupModelPackageConnector implements ModelPackageConnector {
+public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupModelPackageConnector.class);
 

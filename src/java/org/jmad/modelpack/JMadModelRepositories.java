@@ -5,6 +5,7 @@
 package org.jmad.modelpack;
 
 import org.jmad.modelpack.service.gitlab.GitlabModelPackageRepository;
+import org.jmad.modelpack.service.internal.domain.InternalRepository;
 
 public class JMadModelRepositories {
 
@@ -18,7 +19,12 @@ public class JMadModelRepositories {
         return cernGitlabGroup("jmad-models-cern");
     }
 
+    public static final InternalRepository internal() {
+        return InternalRepository.INTERNAL;
+    }
+
     private static GitlabModelPackageRepository cernGitlabGroup(String groupName) {
         return new GitlabModelPackageRepository(CERN_GITLAB, groupName);
     }
+
 }
