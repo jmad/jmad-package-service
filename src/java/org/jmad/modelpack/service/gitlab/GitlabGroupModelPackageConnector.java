@@ -54,9 +54,7 @@ public class GitlabGroupModelPackageConnector implements ModelPackageConnector {
         }
         GitlabModelPackage pkg = (GitlabModelPackage) modelPackage.modelPackage();
 
-        /* TODO: Treat branch/tag */
-
-        String uri = repositoryUri(pkg.repository(), pkg.id()) + "/archive.zip";
+        String uri = repositoryUri(pkg.repository(), pkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
         LOGGER.info("Retrieving package from {}.", uri);
 
         // @formatter:off
@@ -66,6 +64,16 @@ public class GitlabGroupModelPackageConnector implements ModelPackageConnector {
                  .retrieve()
                  .bodyToMono(Resource.class);
         // @formatter:on
+    }
+
+    private static String variantParam(Variant variant) {
+        if (variant instanceof Tag) {
+            return "?sha=" + variant.name();
+        }
+        if (variant instanceof Branch) {
+            return "?sha=" + variant.name();
+        }
+        return "";
     }
 
     public Flux<Variant> variantsFor(GitlabModelPackageRepository repo, GitlabProject pkg) {
