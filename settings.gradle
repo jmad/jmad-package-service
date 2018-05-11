@@ -1,7 +1,9 @@
 rootProject.name = 'jmad-modelpack-service'
 
-includeBuild('../jmad-core')  {
-    dependencySubstitution {
-        substitute module('org.jmad:jmad-core') with project(':')
+if(gradle.parent == null) {
+    includeBuild('../jmad-core')  {
+        dependencySubstitution {
+            substitute module('org.jmad:jmad-core') with project(':')
+        }
     }
 }
