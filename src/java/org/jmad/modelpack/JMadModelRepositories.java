@@ -12,7 +12,7 @@ public class JMadModelRepositories {
     private static final String CERN_GITLAB = "https://gitlab.cern.ch";
 
     public static final GitlabModelPackageRepository cernGitlabTesting() {
-        return cernGitlabGroup("jmad-models-cern-testing");
+        return cernGitlabGroup("jmad-bundles-cern-testing");
     }
 
     public static final GitlabModelPackageRepository cernGitlabPro() {
