@@ -33,9 +33,9 @@ public class JMadModelPackageServiceConfiguration {
     @Bean
     public ConcurrentModelPackageRepositoryManager packageRepositoryManager() {
         ConcurrentModelPackageRepositoryManager manager = new ConcurrentModelPackageRepositoryManager();
-        manager.enable(cernGitlabTesting());
-        manager.disable(cernGitlabPro());
+        manager.enable(cernGitlabPro());
         manager.enable(internal());
+        manager.disable(cernGitlabTesting());
         return manager;
     }
 
