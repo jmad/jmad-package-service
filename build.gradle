@@ -35,9 +35,13 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
+    id 'eclipse'
+    id 'idea'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.7.3'
 }
+
+group 'jmad'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 
@@ -112,4 +116,18 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
