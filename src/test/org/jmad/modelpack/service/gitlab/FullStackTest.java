@@ -28,10 +28,9 @@ import cern.accsoft.steering.jmad.service.JMadService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JMadModelPackageServiceConfiguration.class)
-@Ignore("Try")
-public class FullStackTry {
+public class FullStackTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FullStackTry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FullStackTest.class);
 
     @Autowired
     private JMadService jmadService;

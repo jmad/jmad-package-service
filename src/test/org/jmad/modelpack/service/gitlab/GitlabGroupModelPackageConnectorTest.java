@@ -32,7 +32,7 @@ public class GitlabGroupModelPackageConnectorTest {
 
     @Test
     public void containsLhcModel() {
-        assertThat(cernModels().stream().anyMatch(p -> p.modelPackage().name().equals("jmad-bundle-lhc-testing"))).isTrue();
+        assertThat(cernModels().stream().anyMatch(p -> p.modelPackage().name().equals("jmad-modelpack-lhc-testing"))).isTrue();
     }
 
     @Test

@@ -19,7 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Ignore("Try")
+// @Ignore("Try")
 public class GitlabTries {
 
     private static Logger LOGGER = LoggerFactory.getLogger(GitlabTries.class);
@@ -32,8 +32,8 @@ public class GitlabTries {
     }
 
     @Test
-    public void fetchProjectOfGroups() throws InterruptedException {
-        String path = "/api/v4/groups/jmad-models-cern-testing/projects";
+    public void fetchProjectOfGroups() {
+        String path = "/api/v4/groups/jmad-modelpacks-testing/projects";
 
         // @formatter:off
         Flux<GitlabProject> flux = webClient.get()
@@ -45,46 +45,4 @@ public class GitlabTries {
         LOGGER.info("Received: {}", flux.collectList().block());
     }
 
-    @Test
-    public void fetchProjectEntries() {
-        String uri = "api/v4/projects/37589/repository/tree";
-
-        // @formatter:off
-        Flux<GitlabTreeNode> flux = webClient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToFlux(GitlabTreeNode.class);
-        // @formatter:on
-
-        LOGGER.info("Received: {}", flux.collectList().block());
-    }
-
-    @Test
-    public void downloadZipFile() {
-        String uri = "api/v4/projects/37589/repository/archive.zip";
-
-     // @formatter:off
-        Mono<Resource> flux = webClient.get()
-                .uri(uri)
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .retrieve()
-                .bodyToMono(Resource.class);
-        // @formatter:on
-
-        LOGGER.info("Received: {}", flux.block());
-    }
-
-    @Test
-    public void fetchTags() {
-        String uri = "api/v4/projects/37589/repository/tags";
-
-        // @formatter:off
-           Flux<GitlabTag> flux = webClient.get()
-                   .uri(uri)
-                   .retrieve()
-                   .bodyToFlux(GitlabTag.class);
-           // @formatter:on
-
-        LOGGER.info("Received: {}", flux.collectList().block());
-    }
 }
