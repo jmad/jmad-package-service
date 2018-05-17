@@ -1,20 +1,70 @@
+buildscript {
+    project.ext.DEPLOYMENT = System.getProperty('deployment') ?: false
+    project.ext.VCS_TAG = System.getProperty('TRAVIS_TAG') ?: System.getenv('TRAVIS_TAG')
+    project.ext.POM = [
+            groupId    : 'jmad',
+            artifactId : 'jmad-modelpack-service',
+            description: 'Service to retrieve JMad model packages from different sources.'
+    ]
+    project.ext.INFO = [
+            repo            : 'https://github.com/jmad/jmad-modelpack-service.git',
+            url             : 'https://jmad.github.io/',
+            github          : 'https://github.com/jmad/jmad-modelpack-service',
+            githubIssues    : 'https://github.com/jmad/jmad-modelpack-service/issues',
+            licenseNameShort: 'Apache-2.0',
+            licenseName     : 'The Apache License, Version 2.0',
+            licenseUrl      : 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    ]
+    project.ext.BINTRAY = [
+            repo        : 'jmad-repo',
+            name        : 'jmad-modelpack-service',
+            organization: 'jmad',
+            userName    : System.getProperty('BINTRAY_USER') ?: System.getenv('BINTRAY_USER'),
+            apiToken    : System.getProperty('BINTRAY_API_TOKEN') ?: System.getenv('BINTRAY_API_TOKEN')
+    ]
+
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+
+}
+
 plugins {
     id 'java'
     id 'jacoco'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.7.3'
 }
 
-repositories { mavenCentral() }
+group 'jmad'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+if (DEPLOYMENT) {
+    println 'Applying deployment scripts'
+    apply from: './scripts/bintray-deploy.gradle'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://dl.bintray.com/jmad/jmad-repo" }
+}
 
 dependencies {
-    compile group: 'org.jmad', name: 'jmad-core', version: '0.0.0'
-    
+    compile group: 'jmad', name: 'jmad-core', version: '0.1.2'
+
     compile group: 'org.springframework', name: 'spring-core', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-aop', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-expression', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-beans', version: '5.0.6.RELEASE'
     compile group: 'org.springframework', name: 'spring-webflux', version: '5.0.6.RELEASE'
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.0.1.RELEASE') {
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.0.1.RELEASE') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
 
@@ -66,4 +116,18 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
