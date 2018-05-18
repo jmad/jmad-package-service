@@ -42,8 +42,8 @@ public class FullStackTest {
     public void loadOneModel() throws JMadModelException {
 
         List<ModelPackageVariant> pkgs = packageService.availablePackages().collectList().block();
-        System.out.println(pkgs);
-        
+        LOGGER.info("Packages found: {}", pkgs);
+
         // @formatter:off
         List<JMadModelDefinition> definitions = packageService.availablePackages()
                 .doOnNext(p -> LOGGER.info("model package found: {}", p))
@@ -53,11 +53,14 @@ public class FullStackTest {
                 .block();
         // @formatter:on
 
-        JMadModelDefinition def = Iterables.getFirst(definitions, null);
+        if (definitions.isEmpty()) {
+            throw new IllegalStateException("No model packages could be found!");
+        }
+        JMadModelDefinition def = definitions.get(0);
 
         LOGGER.info("Opening model from definition: {}.", def);
         JMadModel model = jmadService.createModel(def);
-        
+
         TfsSummary ts = model.calcTwissSummary();
         LOGGER.info("Twiss summary for model {}: {}.", model, ts);
 
