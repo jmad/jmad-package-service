@@ -1,0 +1,8 @@
+image:https://www.travis-ci.com/jmad/jmad-modelpack-service.svg?branch=master["Build Status", link="https://www.travis-ci.com/jmad/jmad-modelpack-service"]
+
+# JMad Modelpackage Service
+
+This service allows to connect to different model repositories, to fetch model definitions from them. Currently, the following sources are supported:
+
+* INTERNAL: This is equivalent to the original concepts, where jmad model definitions are read from the classpath.
+* Gitlab Groups: Treats gitlab groups as model package repositories, from which model packages can be fetched.
