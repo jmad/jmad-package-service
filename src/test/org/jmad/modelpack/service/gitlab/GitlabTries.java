@@ -5,19 +5,13 @@
 package org.jmad.modelpack.service.gitlab;
 
 import org.jmad.modelpack.service.gitlab.internals.GitlabProject;
-import org.jmad.modelpack.service.gitlab.internals.GitlabTag;
-import org.jmad.modelpack.service.gitlab.internals.GitlabTreeNode;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class GitlabTries {
 

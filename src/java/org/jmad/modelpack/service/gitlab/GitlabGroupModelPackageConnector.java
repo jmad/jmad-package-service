@@ -9,7 +9,6 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
-import org.jmad.modelpack.service.ModelPackageConnector;
 import org.jmad.modelpack.service.ZipModelPackageConnector;
 import org.jmad.modelpack.service.gitlab.domain.Branch;
 import org.jmad.modelpack.service.gitlab.domain.Tag;

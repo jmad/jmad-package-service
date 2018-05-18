@@ -4,7 +4,6 @@
 
 package org.jmad.modelpack.service;
 
-import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
