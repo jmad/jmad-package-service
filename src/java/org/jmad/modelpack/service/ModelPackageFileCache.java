@@ -17,4 +17,6 @@ public interface ModelPackageFileCache {
     Mono<File> fileFor(ModelPackageVariant packageVariant,
             Function<ModelPackageVariant, Mono<Resource>> zipFileResourceCallback);
     
+    Mono<Void> clear();
+    
 }

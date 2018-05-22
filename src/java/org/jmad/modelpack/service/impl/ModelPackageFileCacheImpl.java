@@ -24,7 +24,6 @@ import cern.accsoft.steering.jmad.util.TempFileUtil;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-
 public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModelPackageFileCacheImpl.class);
@@ -92,6 +91,16 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 
     private static final String zipFileName(ModelPackageVariant packageVariant) {
         return packageVariant.fullName() + ZIP_FILE_EXTENSION;
+    }
+
+    @Override
+    public Mono<Void> clear() {
+        return Mono.fromRunnable(() -> {
+            synchronized (packageFiles) {
+                packageFiles.values().forEach(File::delete);
+                packageFiles.clear();
+            }
+        });
     }
 
 }
