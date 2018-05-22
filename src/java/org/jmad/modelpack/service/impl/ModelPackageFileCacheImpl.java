@@ -31,7 +31,8 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
     private static final String CACHE_SUBDIR = "package-cache";
 
     private final TempFileUtil tempFileUtil;
-
+    private final Gson
+    
     /**
      * contains all the files which were are used. The purpose here is to return the same file instances each time, so
      * that we can lock on them for checking if they exist or when writing to them. This way, at least we should be able

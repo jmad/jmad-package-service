@@ -1,35 +1,39 @@
 buildscript {
+    project.ext.CERN_VM = System.getProperty('CERN_TECHNET_VM') ?: System.getenv('CERN_TECHNET_VM') ?: false
     project.ext.DEPLOYMENT = System.getProperty('deployment') ?: false
     project.ext.VCS_TAG = System.getProperty('TRAVIS_TAG') ?: System.getenv('TRAVIS_TAG')
     project.ext.POM = [
-            groupId    : 'jmad',
-            artifactId : 'jmad-modelpack-service',
-            description: 'Service to retrieve JMad model packages from different sources.'
+        groupId    : 'jmad',
+        artifactId : 'jmad-modelpack-service',
+        description: 'Service to retrieve JMad model packages from different sources.'
     ]
     project.ext.INFO = [
-            repo            : 'https://github.com/jmad/jmad-modelpack-service.git',
-            url             : 'https://jmad.github.io/',
-            github          : 'https://github.com/jmad/jmad-modelpack-service',
-            githubIssues    : 'https://github.com/jmad/jmad-modelpack-service/issues',
-            licenseNameShort: 'Apache-2.0',
-            licenseName     : 'The Apache License, Version 2.0',
-            licenseUrl      : 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        repo            : 'https://github.com/jmad/jmad-modelpack-service.git',
+        url             : 'https://jmad.github.io/',
+        github          : 'https://github.com/jmad/jmad-modelpack-service',
+        githubIssues    : 'https://github.com/jmad/jmad-modelpack-service/issues',
+        licenseNameShort: 'Apache-2.0',
+        licenseName     : 'The Apache License, Version 2.0',
+        licenseUrl      : 'http://www.apache.org/licenses/LICENSE-2.0.txt'
     ]
     project.ext.BINTRAY = [
-            repo        : 'jmad-repo',
-            name        : 'jmad-modelpack-service',
-            organization: 'jmad',
-            userName    : System.getProperty('BINTRAY_USER') ?: System.getenv('BINTRAY_USER'),
-            apiToken    : System.getProperty('BINTRAY_API_TOKEN') ?: System.getenv('BINTRAY_API_TOKEN')
+        repo        : 'jmad-repo',
+        name        : 'jmad-modelpack-service',
+        organization: 'jmad',
+        userName    : System.getProperty('BINTRAY_USER') ?: System.getenv('BINTRAY_USER'),
+        apiToken    : System.getProperty('BINTRAY_API_TOKEN') ?: System.getenv('BINTRAY_API_TOKEN')
     ]
 
     repositories {
-        jcenter()
+        if (CERN_VM) {
+            maven { url 'http://artifactory.cern.ch/gradle-plugins' }
+            maven { url 'http://artifactory.cern.ch/ds-jcenter' }
+            maven { url 'http://artifactory.cern.ch/development' }
+        } else {
+            jcenter()
+        }
     }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-    }
-
+    dependencies { classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3' }
 }
 
 plugins {
@@ -37,8 +41,6 @@ plugins {
     id 'jacoco'
     id 'eclipse'
     id 'idea'
-    id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.7.3'
 }
 
 group 'jmad'
@@ -46,13 +48,22 @@ group 'jmad'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 if (DEPLOYMENT) {
+    plugins {
+        id 'maven-publish'
+        id 'com.jfrog.bintray' version '1.7.3'
+    }
     println 'Applying deployment scripts'
     apply from: './scripts/bintray-deploy.gradle'
 }
 
 repositories {
-    mavenCentral()
-    maven { url "https://dl.bintray.com/jmad/jmad-repo" }
+    if (CERN_VM) {
+        maven { url 'http://artifactory.cern.ch/ds-jcenter' }
+        maven { url 'http://artifactory.cern.ch/development' }
+    } else {
+        mavenCentral()
+        maven { url "https://dl.bintray.com/jmad/jmad-repo" }
+    }
 }
 
 dependencies {
@@ -68,6 +79,8 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
 
+    //  compile group: 'com.google.code.gson', name: 'gson', version: '2.8.4'
+
     compile group: 'io.projectreactor', name: 'reactor-core', version: '3.1.7.RELEASE'
     compile group: 'io.projectreactor', name: 'reactor-test', version: '3.1.7.RELEASE'
     compile group: 'io.projectreactor.ipc', name: 'reactor-netty', version: '0.7.7.RELEASE'
@@ -81,19 +94,17 @@ dependencies {
     testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
-}
+task wrapper(type: Wrapper) { gradleVersion = '4.7' }
 
 sourceSets {
     main {
-        java { srcDirs = ['src/java'] }
-        resources { srcDirs = ['src/java'] }
+        java { srcDirs = ['src/java']}
+        resources { srcDirs = ['src/java']}
     }
 
     test {
-        java { srcDirs = ['src/test'] }
-        resources { srcDirs = ['src/test'] }
+        java { srcDirs = ['src/test']}
+        resources { srcDirs = ['src/test']}
     }
 }
 
