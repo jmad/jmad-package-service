@@ -24,4 +24,9 @@ public interface JMadModelPackageService {
     Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage);
 
     Mono<Void> clearCache();
+
+    public enum Mode {
+        ONLINE,
+        OFFLINE;
+    }
 }

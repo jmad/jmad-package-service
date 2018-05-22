@@ -5,9 +5,12 @@
 package org.jmad.modelpack.service.impl;
 
 import static java.util.stream.Collectors.toList;
+import static org.jmad.modelpack.service.JMadModelPackageService.Mode.ONLINE;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
@@ -42,6 +45,8 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     @Autowired
     private ModelPackageFileCache cache;
 
+    private final AtomicReference<Mode> mode = new AtomicReference<>(ONLINE);
+
     @PostConstruct
     public void init() {
         LOGGER.info("Available model package connectors: {}.", connectors);
@@ -49,17 +54,33 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
 
     @Override
     public Flux<ModelPackageVariant> availablePackages() {
-        return provider.enabledRepositories().flatMap(this::packagesFrom);
+        if (ONLINE == mode.get()) {
+            return provider.enabledRepositories().flatMap(this::packagesFrom);
+        } else {
+            return cache.cachedPackageVariants();
+        }
+    }
+
+    private Function<ModelPackageVariant, Mono<Resource>> resourceCallback() {
+        if (ONLINE == mode.get()) {
+            return this::zipResourceFrom;
+        } else {
+            return this::errorOffline;
+        }
     }
 
     @Override
     public Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage) {
-        return definitionsFromDirect(modelPackage).switchIfEmpty(definitiionsFromFile(modelPackage));
+        return definitionsFromDirect(modelPackage).switchIfEmpty(definitionsFromFile(modelPackage));
     }
 
     @Override
     public Mono<Void> clearCache() {
         return cache.clear();
+    }
+
+    private Mono<Resource> errorOffline(@SuppressWarnings("unused") ModelPackageVariant modelPackage) {
+        return Mono.error(new IllegalStateException("service is in OFFLINE mode. No resource download is possible."));
     }
 
     private Flux<JMadModelDefinition> definitionsFromDirect(ModelPackageVariant modelPackage) {
@@ -75,9 +96,9 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
         return Flux.merge(directStreams);
     }
 
-    private Flux<JMadModelDefinition> definitiionsFromFile(ModelPackageVariant modelPackage) {
+    private Flux<JMadModelDefinition> definitionsFromFile(ModelPackageVariant modelPackage) {
         // @formatter:off
-        return cache.fileFor(modelPackage, this::zipResourceFrom)
+        return cache.fileFor(modelPackage, resourceCallback())
                 .flatMapMany(this::modelDefinitionsFrom);
         // @formatter:on
     }

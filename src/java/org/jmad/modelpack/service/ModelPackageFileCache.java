@@ -10,13 +10,16 @@ import java.util.function.Function;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.springframework.core.io.Resource;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ModelPackageFileCache {
 
     Mono<File> fileFor(ModelPackageVariant packageVariant,
             Function<ModelPackageVariant, Mono<Resource>> zipFileResourceCallback);
-    
+
+    Flux<ModelPackageVariant> cachedPackageVariants();
+
     Mono<Void> clear();
-    
+
 }
