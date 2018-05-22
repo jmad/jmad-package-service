@@ -4,7 +4,7 @@
 
 package org.jmad.modelpack.service.internal.conf;
 
-import org.jmad.modelpack.service.internal.InternalModelPackageConnector;
+import org.jmad.modelpack.service.internal.InternalModelPackageConnectorImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class InternalConnectorConfiguration {
 
     @Bean
-    public InternalModelPackageConnector internalModelPackageConnector() {
-        return new InternalModelPackageConnector();
+    public InternalModelPackageConnectorImpl internalModelPackageConnector() {
+        return new InternalModelPackageConnectorImpl();
     }
 
 }

@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.DirectModelPackageConnector;
+import org.jmad.modelpack.service.InternalModelPackageConnector;
 import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.ModelPackageConnector;
 import org.jmad.modelpack.service.ModelPackageFileCache;
@@ -61,8 +61,8 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
         // @formatter:off
         List<Flux<JMadModelDefinition>> directStreams = 
                 connectors.stream()
-                .filter(c -> c instanceof DirectModelPackageConnector)
-                .map(c -> (DirectModelPackageConnector)c)
+                .filter(c -> c instanceof InternalModelPackageConnector)
+                .map(c -> (InternalModelPackageConnector)c)
                 .map(c -> c.modelDefinitionsFor(modelPackage))
                 .collect(toList());
         // @formatter:on
