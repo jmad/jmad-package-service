@@ -8,6 +8,8 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -28,6 +30,7 @@ import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.io.JMadModelDefinitionImporter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 
 public class MultiConnectorModelPackageService implements JMadModelPackageService {
 
@@ -55,6 +58,13 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     @Override
     public Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage) {
         return definitionsFromDirect(modelPackage).switchIfEmpty(definitiionsFromFile(modelPackage));
+    }
+
+    @Override
+    public Mono<Void> clearCache() {
+        MonoProcessor<Void> sink = MonoProcessor.create();
+        Executors.newSingleThreadScheduledExecutor().schedule(sink::onComplete, 2, TimeUnit.SECONDS);
+        return sink;
     }
 
     private Flux<JMadModelDefinition> definitionsFromDirect(ModelPackageVariant modelPackage) {

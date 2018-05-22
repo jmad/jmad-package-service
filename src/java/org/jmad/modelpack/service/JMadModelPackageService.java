@@ -4,6 +4,7 @@ import org.jmad.modelpack.domain.ModelPackageVariant;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
@@ -21,4 +22,6 @@ public interface JMadModelPackageService {
     Flux<ModelPackageVariant> availablePackages();
 
     Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage);
+
+    Mono<Void> clearCache();
 }
