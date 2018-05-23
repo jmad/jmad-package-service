@@ -36,14 +36,13 @@ buildscript {
     dependencies { classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3' }
 }
 
-plugins {
-    id 'java'
-    id 'jacoco'
-    id 'eclipse'
-    id 'idea'
-    id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.7.3'
-}
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
 
 group 'jmad'
 
