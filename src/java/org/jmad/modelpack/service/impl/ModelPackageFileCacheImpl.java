@@ -60,7 +60,7 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 
     public ModelPackageFileCacheImpl(TempFileUtil tempFileUtil) {
         requireNonNull(tempFileUtil, "tempFileUtil must not be null");
-        this.cacheDir = tempFileUtil.getOutputFile(CACHE_SUBDIR);
+        this.cacheDir = tempFileUtil.getOutputDir(CACHE_SUBDIR);
     }
 
     @Override
