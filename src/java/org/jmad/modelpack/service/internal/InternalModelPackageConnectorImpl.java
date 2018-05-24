@@ -4,18 +4,19 @@
 
 package org.jmad.modelpack.service.internal;
 
-import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
-import cern.accsoft.steering.jmad.service.JMadService;
+import static org.jmad.modelpack.service.internal.domain.InternalModelPackage.INTERNAL;
+import static org.jmad.modelpack.service.internal.domain.InternalPackageVariant.NONE;
+
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.ModelPackageVariantImpl;
 import org.jmad.modelpack.service.InternalModelPackageConnector;
 import org.jmad.modelpack.service.internal.domain.InternalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import reactor.core.publisher.Flux;
 
-import static org.jmad.modelpack.service.internal.domain.InternalModelPackage.INTERNAL;
-import static org.jmad.modelpack.service.internal.domain.InternalPackageVariant.NONE;
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import cern.accsoft.steering.jmad.service.JMadService;
+import reactor.core.publisher.Flux;
 
 public class InternalModelPackageConnectorImpl implements InternalModelPackageConnector {
 

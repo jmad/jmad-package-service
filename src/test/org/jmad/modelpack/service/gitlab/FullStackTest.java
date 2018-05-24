@@ -9,7 +9,6 @@ import java.util.List;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.conf.JMadModelPackageServiceConfiguration;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
