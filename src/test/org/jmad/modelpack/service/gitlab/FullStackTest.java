@@ -24,7 +24,6 @@ import cern.accsoft.steering.jmad.model.JMadModel;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.service.JMadService;
 
-@Ignore("Contact to cern gitlab from outside seems not to be possible (yet)")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JMadModelPackageServiceConfiguration.class)
 public class FullStackTest {

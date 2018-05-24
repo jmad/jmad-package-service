@@ -25,6 +25,10 @@ public interface JMadModelPackageService {
 
     Mono<Void> clearCache();
 
+    public Mode mode();
+
+    public void setMode(Mode mode);
+
     public enum Mode {
         ONLINE,
         OFFLINE;

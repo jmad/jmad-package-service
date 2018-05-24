@@ -133,4 +133,14 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
         return Flux.merge(connectorStreams);
     }
 
+    @Override
+    public Mode mode() {
+        return this.mode.get();
+    }
+
+    @Override
+    public void setMode(Mode mode) {
+        this.mode.set(mode);
+    }
+
 }
