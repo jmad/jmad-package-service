@@ -22,7 +22,6 @@ import org.springframework.context.annotation.ImportResource;
 import cern.accsoft.steering.jmad.util.TempFileUtil;
 
 @Import({ GitlabConnectorConfiguration.class, InternalConnectorConfiguration.class })
-@ImportResource(locations = "classpath:app-ctx-jmad-service.xml")
 public class JMadModelPackageServiceConfiguration {
 
     @Bean
