@@ -4,14 +4,15 @@
 
 package org.jmad.modelpack.service.internal.domain;
 
+import org.jmad.modelpack.domain.Commit;
 import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
 
-public enum InternalPackageVariant implements Variant {
-    NONE;
+public class InternalPackageVariant extends Variant {
+    public static final InternalPackageVariant NONE = new InternalPackageVariant();
 
-    @Override
-    public String fullName() {
-        return name();
+    public InternalPackageVariant() {
+        super("INTERNAL", new Commit("INTERNAL", "INTERNAL"), VariantType.RELEASE);
     }
 
 }

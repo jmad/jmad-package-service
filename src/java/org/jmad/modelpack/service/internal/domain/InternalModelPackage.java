@@ -5,14 +5,14 @@
 package org.jmad.modelpack.service.internal.domain;
 
 import org.jmad.modelpack.domain.ModelPackage;
-import org.jmad.modelpack.domain.ModelPackageRepository;
 
-public enum InternalModelPackage implements ModelPackage {
-    INTERNAL;
+public class InternalModelPackage extends ModelPackage {
 
-    @Override
-    public ModelPackageRepository sourceRepository() {
-        return InternalRepository.INTERNAL;
+    private static final String INTERNAL_STRING = "INTERNAL";
+    public static InternalModelPackage INTERNAL = new InternalModelPackage();
+
+    public InternalModelPackage() {
+        super(INTERNAL_STRING, InternalRepository.INTERNAL, INTERNAL_STRING, INTERNAL_STRING);
     }
 
 }

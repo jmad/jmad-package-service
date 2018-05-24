@@ -4,8 +4,7 @@
 
 package org.jmad.modelpack.service.gitlab.internals;
 
-import org.jmad.modelpack.service.gitlab.domain.Release;
-import org.jmad.modelpack.service.gitlab.domain.Tag;
+import org.jmad.modelpack.domain.Variant;
 
 public class GitlabTag {
 
@@ -73,11 +72,11 @@ public class GitlabTag {
         return true;
     }
 
-    public Tag toTag() {
+    public Variant toTag() {
         if (release == null) {
-            return new Tag(name, commit.toCommit());
+            return Variant.tag(name, commit.toCommit());
         } else {
-            return new Release(name, commit.toCommit());
+            return Variant.release(name, commit.toCommit());
         }
     }
 

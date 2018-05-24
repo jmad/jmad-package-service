@@ -7,9 +7,6 @@ package org.jmad.modelpack.domain;
 import static org.jmad.modelpack.domain.ModelPackages.variantComparator;
 
 import org.assertj.core.api.Assertions;
-import org.jmad.modelpack.service.gitlab.domain.Commit;
-import org.jmad.modelpack.service.gitlab.domain.Release;
-import org.jmad.modelpack.service.gitlab.domain.Tag;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -17,12 +14,11 @@ public class ModelPackagesTest {
 
     @Test
     public void releaseIsFirst() {
-        
         Commit anyCommit = Mockito.mock(Commit.class);
-        
-        Release release = new Release("", anyCommit);
-        Tag tag = new Tag("", anyCommit);
-        
+
+        Variant release = new Variant("", anyCommit, VariantType.RELEASE);
+        Variant tag = new Variant("", anyCommit, VariantType.TAG);
+
         Assertions.assertThat(variantComparator().compare(release, tag)).isEqualTo(-1);
     }
 

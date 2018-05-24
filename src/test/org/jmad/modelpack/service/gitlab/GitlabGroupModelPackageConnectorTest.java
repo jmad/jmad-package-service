@@ -9,6 +9,7 @@ import static org.jmad.modelpack.JMadModelRepositories.cernGitlabTesting;
 
 import java.util.List;
 
+import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Flux;
 
 public class GitlabGroupModelPackageConnectorTest {
 
-    private static final GitlabModelPackageRepository REPO = cernGitlabTesting();
+    private static final ModelPackageRepository REPO = cernGitlabTesting();
     private GitlabGroupModelPackageConnector service;
 
     @Before

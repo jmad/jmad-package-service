@@ -17,7 +17,6 @@ import org.jmad.modelpack.service.impl.MultiConnectorModelPackageService;
 import org.jmad.modelpack.service.internal.conf.InternalConnectorConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
 
 import cern.accsoft.steering.jmad.util.TempFileUtil;
 

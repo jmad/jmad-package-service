@@ -4,10 +4,40 @@
 
 package org.jmad.modelpack.domain;
 
-public interface ModelPackage {
+import static java.util.Objects.requireNonNull;
 
-    String name();
+public class ModelPackage {
 
-    ModelPackageRepository sourceRepository();
+    protected final String name;
+    protected final ModelPackageRepository repository;
+    protected final String projectId;
+    protected final String description;
+
+    public ModelPackage(String name, ModelPackageRepository repository, String projectId, String description) {
+        this.name = requireNonNull(name, "name must not be null");
+        this.repository = requireNonNull(repository, "repository must not be null");
+        this.projectId = requireNonNull(projectId, "project must not be null");
+        this.description = requireNonNull(description, "description must not be null");
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public ModelPackageRepository sourceRepository() {
+        return repository;
+    }
+
+    public String id() {
+        return projectId;
+    }
+
+    public String description() {
+        return description;
+    }
+
+    public ModelPackageRepository repository() {
+        return (ModelPackageRepository) sourceRepository();
+    }
 
 }

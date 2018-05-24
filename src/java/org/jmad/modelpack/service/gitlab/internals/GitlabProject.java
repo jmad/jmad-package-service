@@ -4,11 +4,10 @@
 
 package org.jmad.modelpack.service.gitlab.internals;
 
+import org.jmad.modelpack.domain.ModelPackage;
+import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.domain.ModelPackageVariantImpl;
 import org.jmad.modelpack.domain.Variant;
-import org.jmad.modelpack.service.gitlab.GitlabModelPackage;
-import org.jmad.modelpack.service.gitlab.GitlabModelPackageRepository;
 
 public class GitlabProject {
 
@@ -67,9 +66,9 @@ public class GitlabProject {
         return true;
     }
 
-    public ModelPackageVariant toModelPackage(GitlabModelPackageRepository repo, Variant variant) {
-        GitlabModelPackage pkg = new GitlabModelPackage(repo, id, name, description);
-        return new ModelPackageVariantImpl(pkg, variant);
+    public ModelPackageVariant toModelPackage(ModelPackageRepository repo, Variant variant) {
+        ModelPackage pkg = new ModelPackage(name, repo, id, description);
+        return new ModelPackageVariant(pkg, variant);
     }
 
 }

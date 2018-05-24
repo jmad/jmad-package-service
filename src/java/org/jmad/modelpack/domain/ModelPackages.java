@@ -4,12 +4,9 @@
 
 package org.jmad.modelpack.domain;
 
-import static java.util.function.Function.identity;
+import static java.util.Comparator.comparing;
 
 import java.util.Comparator;
-
-import org.jmad.modelpack.service.gitlab.domain.Release;
-import org.jmad.modelpack.service.gitlab.domain.Tag;
 
 /**
  * Utility methods for jmad model packages
@@ -28,22 +25,7 @@ public final class ModelPackages {
     }
 
     public static Comparator<Variant> variantComparator() {
-        return Comparator.<Variant, Variant> comparing(identity(), (c1, c2) -> {
-            if ((c1 instanceof Release) && !(c2 instanceof Release)) {
-                return -1;
-            }
-            if ((c2 instanceof Release) && !(c1 instanceof Release)) {
-                return 1;
-            }
-
-            if ((c1 instanceof Tag) && !(c2 instanceof Tag)) {
-                return -1;
-            }
-            if ((c2 instanceof Tag) && !(c1 instanceof Tag)) {
-                return 1;
-            }
-            return 0;
-        }).thenComparing(Comparator.comparing(Variant::name).reversed());
+        return comparing(Variant::type).thenComparing(comparing(Variant::name).reversed());
     }
 
 }

@@ -9,7 +9,6 @@ import static org.jmad.modelpack.service.internal.domain.InternalPackageVariant.
 
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.domain.ModelPackageVariantImpl;
 import org.jmad.modelpack.service.InternalModelPackageConnector;
 import org.jmad.modelpack.service.internal.domain.InternalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class InternalModelPackageConnectorImpl implements InternalModelPackageCo
     @Override
     public Flux<ModelPackageVariant> availablePackages(ModelPackageRepository repository) {
         if (repository == InternalRepository.INTERNAL) {
-            return Flux.just(new ModelPackageVariantImpl(INTERNAL, NONE));
+            return Flux.just(new ModelPackageVariant(INTERNAL, NONE));
         } else {
             return Flux.empty();
         }

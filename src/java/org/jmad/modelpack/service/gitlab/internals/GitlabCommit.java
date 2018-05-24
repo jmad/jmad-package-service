@@ -4,7 +4,7 @@
 
 package org.jmad.modelpack.service.gitlab.internals;
 
-import org.jmad.modelpack.service.gitlab.domain.Commit;
+import org.jmad.modelpack.domain.Commit;
 
 public class GitlabCommit {
 

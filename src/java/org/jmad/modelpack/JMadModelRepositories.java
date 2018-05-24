@@ -4,18 +4,19 @@
 
 package org.jmad.modelpack;
 
-import org.jmad.modelpack.service.gitlab.GitlabModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.service.internal.domain.InternalRepository;
 
 public class JMadModelRepositories {
 
+    public static final String GITLAB_API_V4 = "gitlab-api-v4";
     private static final String CERN_GITLAB = "https://gitlab.cern.ch";
 
-    public static final GitlabModelPackageRepository cernGitlabTesting() {
+    public static final ModelPackageRepository cernGitlabTesting() {
         return cernGitlabGroup("jmad-modelpacks-testing");
     }
 
-    public static final GitlabModelPackageRepository cernGitlabPro() {
+    public static final ModelPackageRepository cernGitlabPro() {
         return cernGitlabGroup("jmad-modelpacks-cern");
     }
 
@@ -23,8 +24,8 @@ public class JMadModelRepositories {
         return InternalRepository.INTERNAL;
     }
 
-    private static GitlabModelPackageRepository cernGitlabGroup(String groupName) {
-        return new GitlabModelPackageRepository(CERN_GITLAB, groupName);
+    private static ModelPackageRepository cernGitlabGroup(String groupName) {
+        return new ModelPackageRepository(CERN_GITLAB, groupName, GITLAB_API_V4);
     }
 
 }

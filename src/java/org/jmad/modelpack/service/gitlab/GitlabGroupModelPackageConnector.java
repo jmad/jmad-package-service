@@ -4,14 +4,14 @@
 
 package org.jmad.modelpack.service.gitlab;
 
+import static org.jmad.modelpack.JMadModelRepositories.GITLAB_API_V4;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 
+import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
 import org.jmad.modelpack.service.ZipModelPackageConnector;
-import org.jmad.modelpack.service.gitlab.domain.Branch;
-import org.jmad.modelpack.service.gitlab.domain.Tag;
 import org.jmad.modelpack.service.gitlab.internals.GitlabBranch;
 import org.jmad.modelpack.service.gitlab.internals.GitlabProject;
 import org.jmad.modelpack.service.gitlab.internals.GitlabTag;
@@ -32,29 +32,28 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
 
     @Override
     public Flux<ModelPackageVariant> availablePackages(ModelPackageRepository repository) {
-        if (!(repository instanceof GitlabModelPackageRepository)) {
+        if (!canHandle(repository)) {
             return Flux.empty();
         }
-        GitlabModelPackageRepository repo = (GitlabModelPackageRepository) repository;
-
-        String uri = repo.baseUrl() + "/api/v4/groups/" + repo.groupName() + "/projects";
+        String uri = repository.baseUrl() + "/api/v4/groups/" + repository.groupName() + "/projects";
         LOGGER.info("Querying model packages from '{}'.", uri);
 
         // @formatter:off
         return retrieve(uri)
                 .bodyToFlux(GitlabProject.class)
-                .flatMap(p -> variantsFor(repo, p).map(v -> p.toModelPackage(repo, v)));
+                .flatMap(p -> variantsFor(repository, p).map(v -> p.toModelPackage(repository, v)));
         // @formatter:on
     }
 
     @Override
     public Mono<Resource> zipResourceFor(ModelPackageVariant modelPackage) {
-        if (!(modelPackage.modelPackage() instanceof GitlabModelPackage)) {
+        ModelPackage pkg = modelPackage.modelPackage();
+        ModelPackageRepository repo = pkg.repository();
+        if (!canHandle(repo)) {
             return Mono.empty();
         }
-        GitlabModelPackage pkg = (GitlabModelPackage) modelPackage.modelPackage();
 
-        String uri = repositoryUri(pkg.repository(), pkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
+        String uri = repositoryUri(repo, pkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
         LOGGER.info("Retrieving package from {}.", uri);
 
         // @formatter:off
@@ -66,21 +65,19 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private static String variantParam(Variant variant) {
-        if (variant instanceof Tag) {
-            return "?sha=" + variant.name();
-        }
-        if (variant instanceof Branch) {
-            return "?sha=" + variant.name();
-        }
-        return "";
+    private boolean canHandle(ModelPackageRepository repo) {
+        return GITLAB_API_V4.equals(repo.connectorId());
     }
 
-    public Flux<Variant> variantsFor(GitlabModelPackageRepository repo, GitlabProject pkg) {
+    private static String variantParam(Variant variant) {
+        return "?sha=" + variant.name();
+    }
+
+    public Flux<Variant> variantsFor(ModelPackageRepository repo, GitlabProject pkg) {
         return Flux.merge(tagsFor(repo, pkg.id), branchesFor(repo, pkg.id));
     }
 
-    private Flux<Branch> branchesFor(GitlabModelPackageRepository repository, String id) {
+    private Flux<Variant> branchesFor(ModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/branches";
 
         // @formatter:off
@@ -90,7 +87,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private Flux<Tag> tagsFor(GitlabModelPackageRepository repository, String id) {
+    private Flux<Variant> tagsFor(ModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/tags";
 
         // @formatter:off
@@ -108,7 +105,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private static String repositoryUri(GitlabModelPackageRepository repository, String id) {
+    private static String repositoryUri(ModelPackageRepository repository, String id) {
         return repository.baseUrl() + "/api/v4/projects/" + id + "/repository";
     }
 

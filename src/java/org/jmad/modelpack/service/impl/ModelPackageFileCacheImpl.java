@@ -26,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.domain.ModelPackageVariantImpl;
 import org.jmad.modelpack.service.ModelPackageFileCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,7 +199,7 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
 
     private Optional<ModelPackageVariant> readMetaInfoFrom(File jsonFile) {
         try (Reader writer = new FileReader(jsonFile)) {
-            ModelPackageVariantImpl packageVariant = gson.fromJson(writer, ModelPackageVariantImpl.class);
+            ModelPackageVariant packageVariant = gson.fromJson(writer, ModelPackageVariant.class);
             LOGGER.info("Successfully read meta info for packageVariant {} from file {}.", packageVariant, jsonFile);
             return Optional.of(packageVariant);
         } catch (IOException e) {
