@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
+import cern.accsoft.steering.jmad.service.JMadService;
 import org.jmad.modelpack.domain.ModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.service.InternalModelPackageConnector;
@@ -41,7 +42,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     @Autowired
     private List<ModelPackageConnector> connectors;
     @Autowired
-    private JMadModelDefinitionImporter importer;
+    private JMadService jMadService;
     @Autowired
     private ModelPackageFileCache cache;
 
@@ -104,7 +105,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     }
 
     private Flux<JMadModelDefinition> modelDefinitionsFrom(File file) {
-        return Flux.fromIterable(importer.importModelDefinitions(file));
+        return Flux.fromIterable(jMadService.getModelDefinitionImporter().importModelDefinitions(file));
     }
 
     private Mono<Resource> zipResourceFrom(ModelPackageVariant modelPackage) {
