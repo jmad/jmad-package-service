@@ -4,8 +4,8 @@
 
 package org.jmad.modelpack.connect.gitlab.internals;
 
-import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
 

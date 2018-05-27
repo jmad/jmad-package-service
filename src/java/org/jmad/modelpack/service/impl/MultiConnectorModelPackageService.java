@@ -19,17 +19,16 @@ import org.jmad.modelpack.connect.InternalModelPackageConnector;
 import org.jmad.modelpack.connect.ModelPackageConnector;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
-import cern.accsoft.steering.jmad.service.JMadService;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.JMadModelPackageRepositoryProvider;
+import org.jmad.modelpack.service.JMadModelPackageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
-import cern.accsoft.steering.jmad.modeldefs.io.JMadModelDefinitionImporter;
+import cern.accsoft.steering.jmad.service.JMadService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
