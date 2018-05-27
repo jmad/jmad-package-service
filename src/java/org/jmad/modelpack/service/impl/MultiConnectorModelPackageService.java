@@ -19,6 +19,7 @@ import org.jmad.modelpack.connect.InternalModelPackageConnector;
 import org.jmad.modelpack.connect.ModelPackageConnector;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import cern.accsoft.steering.jmad.service.JMadService;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.JMadModelPackageRepositoryProvider;
@@ -41,7 +42,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     @Autowired
     private List<ModelPackageConnector> connectors;
     @Autowired
-    private JMadModelDefinitionImporter importer;
+    private JMadService jMadService;
     @Autowired
     private ModelPackageFileCache cache;
 
@@ -104,7 +105,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     }
 
     private Flux<JMadModelDefinition> modelDefinitionsFrom(File file) {
-        return Flux.fromIterable(importer.importModelDefinitions(file));
+        return Flux.fromIterable(jMadService.getModelDefinitionImporter().importModelDefinitions(file));
     }
 
     private Mono<Resource> zipResourceFrom(ModelPackageVariant modelPackage) {

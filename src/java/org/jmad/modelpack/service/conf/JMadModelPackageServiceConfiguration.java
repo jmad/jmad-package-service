@@ -18,13 +18,24 @@ import org.jmad.modelpack.service.impl.MultiConnectorModelPackageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
-import cern.accsoft.steering.jmad.util.TempFileUtil;
+import cern.accsoft.steering.jmad.service.JMadService;
+import cern.accsoft.steering.jmad.util.JMadPreferences;
+import cern.accsoft.steering.jmad.util.TempFileUtilImpl;
 
+/**
+ * Spring configuration that only creates the beans for the jmad-modelpack-service. It expects all the necessary beans
+ * already in the context. You can use the {@link JMadModelPackageServiceStandaloneConfiguration} if you want to
+ * have a fully configured, ready-to-use, context.
+ */
 @Import({ GitlabConnectorConfiguration.class, InternalConnectorConfiguration.class })
 public class JMadModelPackageServiceConfiguration {
 
     @Bean
-    public ModelPackageFileCache modelPackageFileCache(TempFileUtil tempFileUtil) {
+    public ModelPackageFileCache modelPackageFileCache(JMadService jMadService) {
+        JMadPreferences preferences = jMadService.getPreferences();
+        TempFileUtilImpl tempFileUtil = new TempFileUtilImpl();
+        tempFileUtil.setPreferences(preferences);
+        tempFileUtil.init();
         return new ModelPackageFileCacheImpl(tempFileUtil);
     }
 
@@ -37,7 +48,7 @@ public class JMadModelPackageServiceConfiguration {
         return manager;
     }
 
-    @Bean
+    @Bean("jmadModelPackageService")
     public JMadModelPackageService jmadModelPackageService() {
         return new MultiConnectorModelPackageService();
     }
