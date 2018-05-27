@@ -4,12 +4,12 @@
 
 package org.jmad.modelpack.service;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 
 import reactor.core.publisher.Flux;
 
-public interface ModelPackageRepositoryProvider {
+public interface JMadModelPackageRepositoryProvider {
 
-    Flux<ModelPackageRepository> enabledRepositories();
+    Flux<JMadModelPackageRepository> enabledRepositories();
 
 }

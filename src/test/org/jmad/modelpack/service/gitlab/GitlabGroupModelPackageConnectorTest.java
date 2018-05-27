@@ -5,11 +5,13 @@
 package org.jmad.modelpack.service.gitlab;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jmad.modelpack.JMadModelRepositories.cernGitlabTesting;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
 
 import java.util.List;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.connect.ModelPackageConnector;
+import org.jmad.modelpack.connect.gitlab.GitlabGroupModelPackageConnector;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +20,8 @@ import reactor.core.publisher.Flux;
 
 public class GitlabGroupModelPackageConnectorTest {
 
-    private static final ModelPackageRepository REPO = cernGitlabTesting();
-    private GitlabGroupModelPackageConnector service;
+    private static final JMadModelPackageRepository REPO = cernGitlabTesting();
+    private ModelPackageConnector service;
 
     @Before
     public void setUp() {

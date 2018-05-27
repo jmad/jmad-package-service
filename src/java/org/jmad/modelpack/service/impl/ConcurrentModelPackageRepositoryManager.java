@@ -5,15 +5,15 @@
 package org.jmad.modelpack.service.impl;
 
 import static java.util.Collections.emptyMap;
-import static org.jmad.modelpack.service.ModelPackageRepositoryManager.EnableState.ENABLED;
+import static org.jmad.modelpack.service.JMadModelPackageRepositoryManager.EnableState.ENABLED;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
-import org.jmad.modelpack.service.ModelPackageRepositoryManager;
-import org.jmad.modelpack.service.ModelPackageRepositoryProvider;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.service.JMadModelPackageRepositoryManager;
+import org.jmad.modelpack.service.JMadModelPackageRepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,38 +22,39 @@ import com.google.common.collect.ImmutableMap;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.ReplayProcessor;
 
-public class ConcurrentModelPackageRepositoryManager implements ModelPackageRepositoryProvider, ModelPackageRepositoryManager {
+public class ConcurrentModelPackageRepositoryManager
+        implements JMadModelPackageRepositoryManager, JMadModelPackageRepositoryProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentModelPackageRepositoryManager.class);
-    
-    private final Map<ModelPackageRepository, EnableState> repositories = new ConcurrentHashMap<>();
-    
-    private final ReplayProcessor<Map<ModelPackageRepository, EnableState>> states = ReplayProcessor
+
+    private final Map<JMadModelPackageRepository, EnableState> repositories = new ConcurrentHashMap<>();
+
+    private final ReplayProcessor<Map<JMadModelPackageRepository, EnableState>> states = ReplayProcessor
             .cacheLastOrDefault(emptyMap());
 
     @Override
-    public void remove(ModelPackageRepository repository) {
+    public void remove(JMadModelPackageRepository repository) {
         repositories.remove(repository);
         LOGGER.info("Removed repository {}.", repository);
         publishState();
     }
 
     @Override
-    public void enable(ModelPackageRepository repository) {
+    public void enable(JMadModelPackageRepository repository) {
         repositories.put(repository, EnableState.ENABLED);
         LOGGER.info("Enabled repository {}.", repository);
         publishState();
     }
 
     @Override
-    public void disable(ModelPackageRepository repository) {
+    public void disable(JMadModelPackageRepository repository) {
         repositories.put(repository, EnableState.DISABLED);
         LOGGER.info("Disabled repository {}.", repository);
         publishState();
     }
 
     @Override
-    public Flux<ModelPackageRepository> enabledRepositories() {
+    public Flux<JMadModelPackageRepository> enabledRepositories() {
         // @formatter:off
         return Flux.fromIterable(repositories.entrySet())
                 .filter(e -> ENABLED == e.getValue())
@@ -66,8 +67,8 @@ public class ConcurrentModelPackageRepositoryManager implements ModelPackageRepo
     }
 
     @Override
-    public Flux<Map<ModelPackageRepository, EnableState>> state() {
+    public Flux<Map<JMadModelPackageRepository, EnableState>> state() {
         return this.states;
     }
-    
+
 }

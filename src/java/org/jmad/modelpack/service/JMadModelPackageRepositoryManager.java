@@ -6,29 +6,30 @@ package org.jmad.modelpack.service;
 
 import java.util.Map;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 
 import reactor.core.publisher.Flux;
 
-public interface ModelPackageRepositoryManager {
+public interface JMadModelPackageRepositoryManager {
 
-    void remove(ModelPackageRepository repository);
+    void remove(JMadModelPackageRepository repository);
 
-    void enable(ModelPackageRepository repository);
+    void enable(JMadModelPackageRepository repository);
 
-    void disable(ModelPackageRepository repository);
+    void disable(JMadModelPackageRepository repository);
 
-    Flux<Map<ModelPackageRepository, EnableState>> state();
-    
+    Flux<Map<JMadModelPackageRepository, EnableState>> state();
+
     public enum EnableState {
         ENABLED(true),
         DISABLED(false);
-        
+
         private EnableState(boolean enabled) {
             this.enabled = enabled;
         }
 
         private final boolean enabled;
+
         public boolean asBoolEnabled() {
             return enabled;
         }

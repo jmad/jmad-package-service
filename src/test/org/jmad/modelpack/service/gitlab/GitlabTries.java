@@ -4,7 +4,7 @@
 
 package org.jmad.modelpack.service.gitlab;
 
-import org.jmad.modelpack.service.gitlab.internals.GitlabProject;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

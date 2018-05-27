@@ -14,14 +14,14 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.cache.ModelPackageFileCache;
+import org.jmad.modelpack.connect.InternalModelPackageConnector;
+import org.jmad.modelpack.connect.ModelPackageConnector;
+import org.jmad.modelpack.connect.ZipModelPackageConnector;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.InternalModelPackageConnector;
 import org.jmad.modelpack.service.JMadModelPackageService;
-import org.jmad.modelpack.service.ModelPackageConnector;
-import org.jmad.modelpack.service.ModelPackageFileCache;
-import org.jmad.modelpack.service.ModelPackageRepositoryProvider;
-import org.jmad.modelpack.service.ZipModelPackageConnector;
+import org.jmad.modelpack.service.JMadModelPackageRepositoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiConnectorModelPackageService.class);
 
     @Autowired
-    private ModelPackageRepositoryProvider provider;
+    private JMadModelPackageRepositoryProvider provider;
     @Autowired
     private List<ModelPackageConnector> connectors;
     @Autowired
@@ -120,7 +120,7 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
         return Mono.first(connectorStreams);
     }
 
-    private Flux<ModelPackageVariant> packagesFrom(ModelPackageRepository repo) {
+    private Flux<ModelPackageVariant> packagesFrom(JMadModelPackageRepository repo) {
         // @formatter:off
         List<Flux<ModelPackageVariant>> connectorStreams 
                 = connectors.stream()

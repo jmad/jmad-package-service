@@ -2,15 +2,16 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.service.internal;
+package org.jmad.modelpack.connect.embedded;
 
-import static org.jmad.modelpack.service.internal.domain.InternalModelPackage.INTERNAL;
-import static org.jmad.modelpack.service.internal.domain.InternalPackageVariant.NONE;
+import static org.jmad.modelpack.connect.embedded.domain.InternalModelPackage.INTERNAL;
+import static org.jmad.modelpack.connect.embedded.domain.InternalPackageVariant.NONE;
 
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.connect.ConnectorIds;
+import org.jmad.modelpack.connect.InternalModelPackageConnector;
+import org.jmad.modelpack.connect.embedded.domain.InternalRepository;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.InternalModelPackageConnector;
-import org.jmad.modelpack.service.internal.domain.InternalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
@@ -23,7 +24,7 @@ public class InternalModelPackageConnectorImpl implements InternalModelPackageCo
     private JMadService jmadService;
 
     @Override
-    public Flux<ModelPackageVariant> availablePackages(ModelPackageRepository repository) {
+    public Flux<ModelPackageVariant> availablePackages(JMadModelPackageRepository repository) {
         if (repository == InternalRepository.INTERNAL) {
             return Flux.just(new ModelPackageVariant(INTERNAL, NONE));
         } else {
@@ -37,6 +38,11 @@ public class InternalModelPackageConnectorImpl implements InternalModelPackageCo
             return Flux.empty();
         }
         return Flux.fromIterable(jmadService.getModelDefinitionManager().getAllModelDefinitions());
+    }
+
+    @Override
+    public String connectorId() {
+        return ConnectorIds.INTERNAL_CONNECTOR_ID;
     }
 
 }

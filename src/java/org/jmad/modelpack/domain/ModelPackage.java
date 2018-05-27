@@ -9,11 +9,11 @@ import static java.util.Objects.requireNonNull;
 public class ModelPackage {
 
     protected final String name;
-    protected final ModelPackageRepository repository;
+    protected final JMadModelPackageRepository repository;
     protected final String projectId;
     protected final String description;
 
-    public ModelPackage(String name, ModelPackageRepository repository, String projectId, String description) {
+    public ModelPackage(String name, JMadModelPackageRepository repository, String projectId, String description) {
         this.name = requireNonNull(name, "name must not be null");
         this.repository = requireNonNull(repository, "repository must not be null");
         this.projectId = requireNonNull(projectId, "project must not be null");
@@ -24,7 +24,7 @@ public class ModelPackage {
         return name;
     }
 
-    public ModelPackageRepository sourceRepository() {
+    public JMadModelPackageRepository sourceRepository() {
         return repository;
     }
 
@@ -36,8 +36,8 @@ public class ModelPackage {
         return description;
     }
 
-    public ModelPackageRepository repository() {
-        return (ModelPackageRepository) sourceRepository();
+    public JMadModelPackageRepository repository() {
+        return (JMadModelPackageRepository) sourceRepository();
     }
 
 }

@@ -2,31 +2,28 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.service.gitlab.internals;
+package org.jmad.modelpack.connect.gitlab.internals;
 
-import org.jmad.modelpack.domain.ModelPackage;
-import org.jmad.modelpack.domain.ModelPackageRepository;
-import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.domain.Variant;
-
-public class GitlabProject {
+public class GitlabTreeNode {
 
     public String id;
     public String name;
-    public String description;
+    public String type;
+    public String path;
 
     @Override
     public String toString() {
-        return "GitlabProject [id=" + id + ", name=" + name + ", description=" + description + "]";
+        return "GitlabTreeNode [id=" + id + ", name=" + name + ", type=" + type + ", path=" + path + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
 
@@ -41,14 +38,7 @@ public class GitlabProject {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        GitlabProject other = (GitlabProject) obj;
-        if (description == null) {
-            if (other.description != null) {
-                return false;
-            }
-        } else if (!description.equals(other.description)) {
-            return false;
-        }
+        GitlabTreeNode other = (GitlabTreeNode) obj;
         if (id == null) {
             if (other.id != null) {
                 return false;
@@ -63,12 +53,21 @@ public class GitlabProject {
         } else if (!name.equals(other.name)) {
             return false;
         }
+        if (path == null) {
+            if (other.path != null) {
+                return false;
+            }
+        } else if (!path.equals(other.path)) {
+            return false;
+        }
+        if (type == null) {
+            if (other.type != null) {
+                return false;
+            }
+        } else if (!type.equals(other.type)) {
+            return false;
+        }
         return true;
-    }
-
-    public ModelPackageVariant toModelPackage(ModelPackageRepository repo, Variant variant) {
-        ModelPackage pkg = new ModelPackage(name, repo, id, description);
-        return new ModelPackageVariant(pkg, variant);
     }
 
 }

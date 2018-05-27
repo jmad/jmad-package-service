@@ -2,7 +2,7 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.service.impl;
+package org.jmad.modelpack.cache.impl;
 
 import static cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil.ZIP_FILE_EXTENSION;
 import static cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil.isZipFileName;
@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jmad.modelpack.cache.ModelPackageFileCache;
 import org.jmad.modelpack.domain.ModelPackageVariant;
-import org.jmad.modelpack.service.ModelPackageFileCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;

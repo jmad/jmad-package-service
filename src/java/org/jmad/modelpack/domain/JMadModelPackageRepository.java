@@ -4,15 +4,15 @@
 
 package org.jmad.modelpack.domain;
 
-public class ModelPackageRepository {
+public class JMadModelPackageRepository {
 
     private final String baseUrl;
-    private final String groupName;
+    private final String repoName;
     private final String connectorId;
 
-    public ModelPackageRepository(String baseUrl, String groupName, String connectorId) {
+    public JMadModelPackageRepository(String baseUrl, String repoName, String connectorId) {
         this.baseUrl = baseUrl;
-        this.groupName = groupName;
+        this.repoName = repoName;
         this.connectorId = connectorId;
     }
 
@@ -20,8 +20,8 @@ public class ModelPackageRepository {
         return baseUrl;
     }
 
-    public String groupName() {
-        return groupName;
+    public String repoName() {
+        return repoName;
     }
 
     public String connectorId() {
@@ -30,8 +30,8 @@ public class ModelPackageRepository {
 
     @Override
     public String toString() {
-        return "ModelPackageRepository [baseUrl=" + baseUrl + ", groupName=" + groupName + ", connectorId="
-                + connectorId + "]";
+        return "JMadModelPackageRepository [baseUrl=" + baseUrl + ", repoName=" + repoName + ", connectorId=" + connectorId
+                + "]";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ModelPackageRepository {
         int result = 1;
         result = prime * result + ((baseUrl == null) ? 0 : baseUrl.hashCode());
         result = prime * result + ((connectorId == null) ? 0 : connectorId.hashCode());
-        result = prime * result + ((groupName == null) ? 0 : groupName.hashCode());
+        result = prime * result + ((repoName == null) ? 0 : repoName.hashCode());
         return result;
     }
 
@@ -55,7 +55,7 @@ public class ModelPackageRepository {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ModelPackageRepository other = (ModelPackageRepository) obj;
+        JMadModelPackageRepository other = (JMadModelPackageRepository) obj;
         if (baseUrl == null) {
             if (other.baseUrl != null) {
                 return false;
@@ -70,11 +70,11 @@ public class ModelPackageRepository {
         } else if (!connectorId.equals(other.connectorId)) {
             return false;
         }
-        if (groupName == null) {
-            if (other.groupName != null) {
+        if (repoName == null) {
+            if (other.repoName != null) {
                 return false;
             }
-        } else if (!groupName.equals(other.groupName)) {
+        } else if (!repoName.equals(other.repoName)) {
             return false;
         }
         return true;

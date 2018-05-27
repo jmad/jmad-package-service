@@ -2,7 +2,7 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.service;
+package org.jmad.modelpack.connect;
 
 import org.jmad.modelpack.domain.ModelPackageVariant;
 

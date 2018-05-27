@@ -4,17 +4,17 @@
 
 package org.jmad.modelpack.service.conf;
 
-import static org.jmad.modelpack.JMadModelRepositories.cernGitlabPro;
-import static org.jmad.modelpack.JMadModelRepositories.cernGitlabTesting;
-import static org.jmad.modelpack.JMadModelRepositories.internal;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabPro;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
+import static org.jmad.modelpack.domain.JMadModelRepositories.internal;
 
+import org.jmad.modelpack.cache.ModelPackageFileCache;
+import org.jmad.modelpack.cache.impl.ModelPackageFileCacheImpl;
+import org.jmad.modelpack.connect.embedded.conf.InternalConnectorConfiguration;
+import org.jmad.modelpack.connect.gitlab.conf.GitlabConnectorConfiguration;
 import org.jmad.modelpack.service.JMadModelPackageService;
-import org.jmad.modelpack.service.ModelPackageFileCache;
-import org.jmad.modelpack.service.gitlab.conf.GitlabConnectorConfiguration;
 import org.jmad.modelpack.service.impl.ConcurrentModelPackageRepositoryManager;
-import org.jmad.modelpack.service.impl.ModelPackageFileCacheImpl;
 import org.jmad.modelpack.service.impl.MultiConnectorModelPackageService;
-import org.jmad.modelpack.service.internal.conf.InternalConnectorConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 

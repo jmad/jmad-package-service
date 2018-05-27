@@ -2,19 +2,19 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.service.gitlab;
+package org.jmad.modelpack.connect.gitlab;
 
-import static org.jmad.modelpack.JMadModelRepositories.GITLAB_API_V4;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 
+import org.jmad.modelpack.connect.ConnectorIds;
+import org.jmad.modelpack.connect.ZipModelPackageConnector;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabTag;
 import org.jmad.modelpack.domain.ModelPackage;
-import org.jmad.modelpack.domain.ModelPackageRepository;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
-import org.jmad.modelpack.service.ZipModelPackageConnector;
-import org.jmad.modelpack.service.gitlab.internals.GitlabBranch;
-import org.jmad.modelpack.service.gitlab.internals.GitlabProject;
-import org.jmad.modelpack.service.gitlab.internals.GitlabTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -31,11 +31,11 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     private final WebClient webClient = WebClient.create();
 
     @Override
-    public Flux<ModelPackageVariant> availablePackages(ModelPackageRepository repository) {
+    public Flux<ModelPackageVariant> availablePackages(JMadModelPackageRepository repository) {
         if (!canHandle(repository)) {
             return Flux.empty();
         }
-        String uri = repository.baseUrl() + "/api/v4/groups/" + repository.groupName() + "/projects";
+        String uri = repository.baseUrl() + "/api/v4/groups/" + repository.repoName() + "/projects";
         LOGGER.info("Querying model packages from '{}'.", uri);
 
         // @formatter:off
@@ -48,7 +48,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     @Override
     public Mono<Resource> zipResourceFor(ModelPackageVariant modelPackage) {
         ModelPackage pkg = modelPackage.modelPackage();
-        ModelPackageRepository repo = pkg.repository();
+        JMadModelPackageRepository repo = pkg.repository();
         if (!canHandle(repo)) {
             return Mono.empty();
         }
@@ -65,19 +65,15 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private boolean canHandle(ModelPackageRepository repo) {
-        return GITLAB_API_V4.equals(repo.connectorId());
-    }
-
     private static String variantParam(Variant variant) {
         return "?sha=" + variant.name();
     }
 
-    public Flux<Variant> variantsFor(ModelPackageRepository repo, GitlabProject pkg) {
+    public Flux<Variant> variantsFor(JMadModelPackageRepository repo, GitlabProject pkg) {
         return Flux.merge(tagsFor(repo, pkg.id), branchesFor(repo, pkg.id));
     }
 
-    private Flux<Variant> branchesFor(ModelPackageRepository repository, String id) {
+    private Flux<Variant> branchesFor(JMadModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/branches";
 
         // @formatter:off
@@ -87,7 +83,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private Flux<Variant> tagsFor(ModelPackageRepository repository, String id) {
+    private Flux<Variant> tagsFor(JMadModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/tags";
 
         // @formatter:off
@@ -105,8 +101,13 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private static String repositoryUri(ModelPackageRepository repository, String id) {
+    private static String repositoryUri(JMadModelPackageRepository repository, String id) {
         return repository.baseUrl() + "/api/v4/projects/" + id + "/repository";
+    }
+
+    @Override
+    public String connectorId() {
+        return ConnectorIds.GITLAB_GROUP_API_V4;
     }
 
 }
