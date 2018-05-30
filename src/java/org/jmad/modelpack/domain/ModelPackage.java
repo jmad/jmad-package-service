@@ -4,6 +4,8 @@
 
 package org.jmad.modelpack.domain;
 
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 
 public class ModelPackage {
@@ -100,4 +102,20 @@ public class ModelPackage {
                 + ", description=" + description + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ModelPackage that = (ModelPackage) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(repository, that.repository) &&
+                Objects.equals(projectId, that.projectId) &&
+                Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, repository, projectId, description);
+    }
 }
