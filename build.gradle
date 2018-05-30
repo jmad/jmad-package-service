@@ -78,7 +78,6 @@ dependencies {
 
     compile group: 'io.projectreactor', name: 'reactor-core', version: '3.1.7.RELEASE'
     compile group: 'io.projectreactor', name: 'reactor-test', version: '3.1.7.RELEASE'
-    compile group: 'io.projectreactor.ipc', name: 'reactor-netty', version: '0.7.7.RELEASE'
 
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
