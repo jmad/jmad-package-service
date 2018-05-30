@@ -10,6 +10,7 @@ import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.service.JMadModelPackageService;
 import org.jmad.modelpack.service.conf.JMadModelPackageServiceStandaloneConfiguration;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import cern.accsoft.steering.jmad.service.JMadService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JMadModelPackageServiceStandaloneConfiguration.class )
+@Ignore
 public class FullStackTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FullStackTest.class);
