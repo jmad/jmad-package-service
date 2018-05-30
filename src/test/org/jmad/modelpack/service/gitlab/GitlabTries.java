@@ -4,12 +4,14 @@
 
 package org.jmad.modelpack.service.gitlab;
 
-import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
+import org.jmad.modelpack.connect.ConnectorIds;
+import org.jmad.modelpack.connect.gitlab.GitlabGroupModelPackageConnector;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
 
@@ -17,24 +19,19 @@ public class GitlabTries {
 
     private static Logger LOGGER = LoggerFactory.getLogger(GitlabTries.class);
 
-    private WebClient webClient;
+    private GitlabGroupModelPackageConnector connector;
+    private JMadModelPackageRepository repo;
 
     @Before
     public void setUp() {
-        this.webClient = WebClient.create("https://gitlab.cern.ch");
+        connector = new GitlabGroupModelPackageConnector();
+        repo = new JMadModelPackageRepository("https://gitlab.cern.ch", "jmad-modelpacks-testing",
+                ConnectorIds.GITLAB_GROUP_API_V4);
     }
 
     @Test
     public void fetchProjectOfGroups() {
-        String path = "/api/v4/groups/jmad-modelpacks-testing/projects";
-
-        // @formatter:off
-        Flux<GitlabProject> flux = webClient.get()
-                .uri(path)
-                .retrieve()
-                .bodyToFlux(GitlabProject.class);
-        // @formatter:on
-
+        Flux<ModelPackageVariant> flux = connector.availablePackages(repo);
         LOGGER.info("Received: {}", flux.collectList().block());
     }
 

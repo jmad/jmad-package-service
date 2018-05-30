@@ -4,7 +4,11 @@
 
 package org.jmad.modelpack.connect.gitlab;
 
-import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 import org.jmad.modelpack.connect.ConnectorIds;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
@@ -18,17 +22,22 @@ import org.jmad.modelpack.domain.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.ReplayProcessor;
 
 public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupModelPackageConnector.class);
 
-    private final WebClient webClient = WebClient.create();
+    private ExecutorService runner = Executors.newCachedThreadPool();
+
+    private RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public Flux<ModelPackageVariant> availablePackages(JMadModelPackageRepository repository) {
@@ -39,8 +48,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         LOGGER.info("Querying model packages from '{}'.", uri);
 
         // @formatter:off
-        return retrieve(uri)
-                .bodyToFlux(GitlabProject.class)
+        return flux(uri,GitlabProject[].class)
                 .flatMap(p -> variantsFor(repository, p).map(v -> p.toModelPackage(repository, v)));
         // @formatter:on
     }
@@ -56,13 +64,13 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         String uri = repositoryUri(repo, pkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
         LOGGER.info("Retrieving package from {}.", uri);
 
-        // @formatter:off
-        return webClient.get()
-                 .uri(uri)
-                 .accept(APPLICATION_OCTET_STREAM)
-                 .retrieve()
-                 .bodyToMono(Resource.class);
-        // @formatter:on
+        return mono(() -> {
+            RequestEntity<Void> request = RequestEntity.get(URI.create(uri)).accept(MediaType.APPLICATION_OCTET_STREAM)
+                    .build();
+            ResponseEntity<Resource> r = restTemplate.exchange(request, Resource.class);
+            return r.getBody();
+        });
+
     }
 
     private static String variantParam(Variant variant) {
@@ -77,8 +85,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         String uri = repositoryUri(repository, id) + "/branches";
 
         // @formatter:off
-        return retrieve(uri)
-               .bodyToFlux(GitlabBranch.class)
+        return flux(uri, GitlabBranch[].class)
                .map(GitlabBranch::toBranch);
         // @formatter:on
     }
@@ -87,17 +94,8 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         String uri = repositoryUri(repository, id) + "/tags";
 
         // @formatter:off
-        return retrieve(uri)
-               .bodyToFlux(GitlabTag.class)
+        return flux(uri, GitlabTag[].class)
                .map(GitlabTag::toTag);
-        // @formatter:on
-    }
-
-    private ResponseSpec retrieve(String uri) {
-        // @formatter:off
-        return webClient.get()
-                .uri(uri)
-                .retrieve();
         // @formatter:on
     }
 
@@ -108,6 +106,23 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     @Override
     public String connectorId() {
         return ConnectorIds.GITLAB_GROUP_API_V4;
+    }
+
+    private <T> Mono<T> mono(Supplier<T> supplier) {
+        ReplayProcessor<T> subject = ReplayProcessor.create();
+        runner.submit(() -> {
+            try {
+                subject.onNext(supplier.get());
+                subject.onComplete();
+            } catch (Exception e) {
+                subject.onError(e);
+            }
+        });
+        return Mono.fromDirect(subject);
+    }
+
+    private <T> Flux<T> flux(String uri, Class<T[]> listClass) {
+        return mono(() -> restTemplate.getForObject(uri, listClass)).flatMapIterable(p -> Arrays.asList(p));
     }
 
 }

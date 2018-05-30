@@ -96,4 +96,9 @@ public class Variant {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "Variant [commit=" + commit + ", name=" + name + ", type=" + type + "]";
+    }
+
 }
