@@ -34,6 +34,7 @@ import reactor.core.publisher.ReplayProcessor;
 public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupModelPackageConnector.class);
+    private static final String JMAD_IGNORE_TAG = "jmad-ignore";
 
     private ExecutorService runner = Executors.newCachedThreadPool();
 
@@ -49,6 +50,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
 
         // @formatter:off
         return flux(uri,GitlabProject[].class)
+                .filter(p -> !p.tag_list.contains(JMAD_IGNORE_TAG))
                 .flatMap(p -> variantsFor(repository, p).map(v -> p.toModelPackage(repository, v)));
         // @formatter:on
     }
