@@ -50,7 +50,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
 
         // @formatter:off
         return flux(uri,GitlabProject[].class)
-                .filter(p -> !p.tag_list.contains(JMAD_IGNORE_TAG))
+                .filter(GitlabGroupModelPackageConnector::filterOutIgnoredRepos)
                 .flatMap(p -> variantsFor(repository, p).map(v -> p.toModelPackage(repository, v)));
         // @formatter:on
     }
@@ -81,6 +81,14 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
 
     public Flux<Variant> variantsFor(JMadModelPackageRepository repo, GitlabProject pkg) {
         return Flux.merge(tagsFor(repo, pkg.id), branchesFor(repo, pkg.id));
+    }
+
+    private static boolean filterOutIgnoredRepos(GitlabProject p) {
+        if (p.tag_list.contains(JMAD_IGNORE_TAG)){
+            LOGGER.info("Ignoring Gitlab project {} because of {} tag", p.name, JMAD_IGNORE_TAG);
+            return false;
+        }
+        return true;
     }
 
     private Flux<Variant> branchesFor(JMadModelPackageRepository repository, String id) {
