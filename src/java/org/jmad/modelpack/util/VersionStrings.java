@@ -37,7 +37,7 @@ public final class VersionStrings {
         List<Integer> v2digits = versionDigits(v2);
 
         if (v1digits.isEmpty() && v2digits.isEmpty()) {
-            return naturalStringOrder(v1, v2);
+            return v1.compareToIgnoreCase(v2);
         } else if (v1digits.isEmpty()) {
             return -1;
         } else if (v2digits.isEmpty()) {
@@ -65,13 +65,10 @@ public final class VersionStrings {
             return 1;
         }
 
-        return naturalStringOrder(v1, v2);
+        return v1.compareToIgnoreCase(v2);
     };
 
-    private static int naturalStringOrder(String v1, String v2) {
-        return Comparator.<String> naturalOrder().compare(v1, v2);
-    }
-
+   
     private static boolean hasVersionPrefix(String v1) {
         return v1.trim().startsWith(VERSION_PREFIX);
     }

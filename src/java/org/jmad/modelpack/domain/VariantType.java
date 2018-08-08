@@ -5,9 +5,11 @@
 package org.jmad.modelpack.domain;
 
 public enum VariantType {
-    RELEASE,
+
+    /* NOTE: The order is relevant here as the comparators compare by ordinal here. */
+    BRANCH,
     TAG,
-    BRANCH;
+    RELEASE;
 
     public String serializedName() {
         return name().toLowerCase();
