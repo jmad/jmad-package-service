@@ -67,7 +67,7 @@ public class ModelPackagesTest {
     @Parameters(method = "shuffledLists")
     public void randomShuffleSorting(List<Variant> listToSort) {
         ArrayList<Variant> copy = new ArrayList<>(listToSort);
-        Collections.sort(copy, ModelPackages.latestLastVariantComparator());
+        Collections.sort(copy, latestLastVariantComparator());
         assertThat(copy).isEqualTo(SORTED_EXPECTED);
     }
 
@@ -101,7 +101,7 @@ public class ModelPackagesTest {
 
     private static List<Variant> sort(Variant... strings) {
         List<Variant> list = Arrays.asList(strings);
-        Collections.sort(list, ModelPackages.latestLastVariantComparator());
+        Collections.sort(list, latestLastVariantComparator());
         return list;
     }
 
