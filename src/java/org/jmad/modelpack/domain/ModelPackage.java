@@ -4,9 +4,9 @@
 
 package org.jmad.modelpack.domain;
 
-import java.util.Objects;
-
 import static java.util.Objects.requireNonNull;
+
+import java.util.Objects;
 
 public class ModelPackage {
 
