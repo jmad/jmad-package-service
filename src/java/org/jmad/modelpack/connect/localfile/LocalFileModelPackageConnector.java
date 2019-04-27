@@ -17,7 +17,7 @@ import static java.util.Arrays.stream;
 public class LocalFileModelPackageConnector implements InternalModelPackageConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileModelPackageConnector.class);
     private static final Variant LOCAL_VARIANT = Variant.release("LOCAL", new Commit("LOCAL", "LOCAL"));
-    public static final String LOCAL_NAME_PREFIX = "LOCAL-";
+    private static final String LOCAL_NAME_PREFIX = "LOCAL-";
 
     @Autowired
     JMadService jMadService;
