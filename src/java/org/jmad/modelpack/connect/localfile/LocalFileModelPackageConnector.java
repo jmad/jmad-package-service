@@ -20,7 +20,7 @@ public class LocalFileModelPackageConnector implements InternalModelPackageConne
     private static final String LOCAL_NAME_PREFIX = "LOCAL-";
 
     @Autowired
-    JMadService jMadService;
+    private JMadService jMadService;
 
     @Override
     public Flux<JMadModelDefinition> modelDefinitionsFor(ModelPackageVariant modelPackage) {
