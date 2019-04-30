@@ -14,7 +14,7 @@ import static org.jmad.modelpack.connect.ConnectorIds.LOCAL_FILE_CONNECTOR_ID;
 public class JMadModelRepositories {
 
     private static final String CERN_GITLAB = "https://gitlab.cern.ch";
-    public static final String PROP_LOCAL_MODEL_REPO = "cern.jmad.modelpacks.local";
+    private static final String PROP_LOCAL_MODEL_REPO = "cern.jmad.modelpacks.local";
 
     public static JMadModelPackageRepository cernGitlabTesting() {
         return cernGitlabGroup("jmad-modelpacks-testing");
