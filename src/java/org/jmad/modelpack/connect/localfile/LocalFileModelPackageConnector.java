@@ -1,6 +1,7 @@
 package org.jmad.modelpack.connect.localfile;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil;
 import cern.accsoft.steering.jmad.service.JMadService;
 import org.jmad.modelpack.connect.ConnectorIds;
 import org.jmad.modelpack.connect.InternalModelPackageConnector;
@@ -51,6 +52,7 @@ public class LocalFileModelPackageConnector implements InternalModelPackageConne
             }
             return Flux.fromStream( //
                     stream(dir.listFiles(File::isDirectory)) //
+                            .filter(sub -> !ModelDefinitionUtil.modelDefinitionFilesBelow(sub.toPath()).isEmpty())
                             .map(File::getName) //
                             .map(n -> modelPackage(n, repository)));
         } catch (Exception e) {
