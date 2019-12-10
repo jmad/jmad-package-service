@@ -20,8 +20,12 @@ public class JMadModelRepositories {
         return cernGitlabGroup("jmad-modelpacks-testing");
     }
 
-    public static JMadModelPackageRepository cernGitlabPro() {
+    public static JMadModelPackageRepository cernGitlabOld() {
         return cernGitlabGroup("jmad-modelpacks-cern");
+    }
+
+    public static JMadModelPackageRepository cernGitlabPro() {
+        return cernGitlabGroup("acc-models");
     }
 
     public static InternalRepository internal() {

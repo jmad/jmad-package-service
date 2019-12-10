@@ -20,7 +20,7 @@ public class GitlabProject {
     public List<String> tag_list;
 
     public ModelPackageVariant toModelPackage(JMadModelPackageRepository repo, Variant variant) {
-        ModelPackage pkg = new ModelPackage(name, repo, id, description);
+        ModelPackage pkg = new ModelPackage(name, repo, id, description == null ? "" : description);
         return new ModelPackageVariant(pkg, variant);
     }
 
