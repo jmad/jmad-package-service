@@ -6,10 +6,12 @@ package org.jmad.modelpack.connect.gitlab;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+import com.google.common.collect.ImmutableSet;
 import org.jmad.modelpack.connect.ConnectorIds;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
@@ -30,6 +32,9 @@ import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
+
+import static org.jmad.modelpack.connect.ConnectorIds.GITLAB_HTTPS_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorIds.GITLAB_HTTP_SCHEME;
 
 public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
@@ -114,8 +119,8 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     @Override
-    public String connectorId() {
-        return ConnectorIds.GITLAB_GROUP_API_V4;
+    public Set<String> handledSchemes() {
+        return ImmutableSet.of(GITLAB_HTTP_SCHEME, GITLAB_HTTPS_SCHEME);
     }
 
     private <T> Mono<T> mono(Supplier<T> supplier) {
@@ -132,7 +137,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     private <T> Flux<T> flux(String uri, Class<T[]> listClass) {
-        return mono(() -> restTemplate.getForObject(uri, listClass)).flatMapIterable(p -> Arrays.asList(p));
+        return mono(() -> restTemplate.getForObject(uri, listClass)).flatMapIterable(Arrays::asList);
     }
 
 }

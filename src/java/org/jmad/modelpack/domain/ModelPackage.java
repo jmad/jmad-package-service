@@ -6,62 +6,48 @@ package org.jmad.modelpack.domain;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.URI;
 import java.util.Objects;
 
 public class ModelPackage {
 
     protected final String name;
     protected final JMadModelPackageRepository repository;
-    protected final String projectId;
-    protected final String description;
+    protected final URI uri;
 
-    public ModelPackage(String name, JMadModelPackageRepository repository, String projectId, String description) {
+    public ModelPackage(String name, JMadModelPackageRepository repository, URI uri) {
         this.name = requireNonNull(name, "name must not be null");
         this.repository = requireNonNull(repository, "repository must not be null");
-        this.projectId = requireNonNull(projectId, "project must not be null");
-        this.description = requireNonNull(description, "description must not be null");
+        this.uri = requireNonNull(uri, "URI must not be null");
     }
 
     public String name() {
         return name;
     }
 
-    public JMadModelPackageRepository sourceRepository() {
-        return repository;
-    }
-
-    public String id() {
-        return projectId;
-    }
-
-    public String description() {
-        return description;
+    public URI uri() {
+        return uri;
     }
 
     public JMadModelPackageRepository repository() {
-        return sourceRepository();
+        return repository;
     }
 
     @Override
     public String toString() {
-        return "ModelPackage [name=" + name + ", repository=" + repository + ", projectId=" + projectId
-                + ", description=" + description + "]";
+        return "ModelPackage [uri=" + uri + ", name=" + name + ", repository=" + repository + "]";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         ModelPackage that = (ModelPackage) o;
-        return Objects.equals(name, that.name) && Objects.equals(repository, that.repository)
-                && Objects.equals(projectId, that.projectId) && Objects.equals(description, that.description);
+        return Objects.equals(uri, that.uri);
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(name, repository, projectId, description);
+        return Objects.hash(uri);
     }
 }

@@ -9,14 +9,16 @@ import org.jmad.modelpack.domain.ModelPackageVariant;
 
 import reactor.core.publisher.Flux;
 
+import java.util.Set;
+
 public interface ModelPackageConnector {
 
     Flux<ModelPackageVariant> availablePackages(JMadModelPackageRepository repository);
 
-    String connectorId();
+    Set<String> handledSchemes();
 
     default boolean canHandle(JMadModelPackageRepository repo) {
-        return connectorId().equals(repo.connectorId());
+        return handledSchemes().contains(repo.connectorScheme());
     }
 
 }

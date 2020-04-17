@@ -44,7 +44,7 @@ public class LocalFileModelPackageConnectorTest {
         tmpRepoDir = Files.createTempDirectory("test-modelpack");
         createModelpack("modelpack-1");
         createModelpack("test-modelpack");
-        repository = new JMadModelPackageRepository(tmpRepoDir.toAbsolutePath().toString(), "TEST", ConnectorIds.LOCAL_FILE_CONNECTOR_ID);
+        repository = new JMadModelPackageRepository(tmpRepoDir.toAbsolutePath().toString(), "TEST", ConnectorIds.LOCAL_FILE_SCHEME);
         when(jMadService.getModelDefinitionImporter()).thenReturn(importer);
     }
 
@@ -68,7 +68,7 @@ public class LocalFileModelPackageConnectorTest {
     @Test
     public void modelDefinitionsFor_unsupportedModelPack_shouldReturnEmpty() {
         JMadModelPackageRepository unsupportedRepo = new JMadModelPackageRepository("foo",
-                "TEST", ConnectorIds.INTERNAL_CONNECTOR_ID);
+                "TEST", ConnectorIds.INTERNAL_SCHEME);
         ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, "modelpack-1", "Test");
         ModelPackageVariant variant = new ModelPackageVariant(modelPackage, Variant.release("LOCAL", new Commit("LOCAL", "LOCAL")));
         List<JMadModelDefinition> modelDefinitions = connector.modelDefinitionsFor(variant).collectList().block();
@@ -87,7 +87,7 @@ public class LocalFileModelPackageConnectorTest {
     @Test
     public void availablePackages_forUnsupportedModelRepo_shouldReturnEmpty() {
         JMadModelPackageRepository repo = new JMadModelPackageRepository("foo",
-                "TEST", ConnectorIds.INTERNAL_CONNECTOR_ID);
+                "TEST", ConnectorIds.INTERNAL_SCHEME);
         List<ModelPackageVariant> allModelPacks = connector.availablePackages(repo).collectList().block();
         assertThat(allModelPacks).isEmpty();
     }
@@ -95,7 +95,7 @@ public class LocalFileModelPackageConnectorTest {
     @Test
     public void availablePackages_forSupportedModelRepoButBadDirectory_shouldReturnError() {
         JMadModelPackageRepository repo = new JMadModelPackageRepository("/i/do/not/exist",
-                "TEST", ConnectorIds.LOCAL_FILE_CONNECTOR_ID);
+                "TEST", ConnectorIds.LOCAL_FILE_SCHEME);
         assertThatExceptionOfType(IllegalArgumentException.class) //
                 .isThrownBy(() -> connector.availablePackages(repo).blockFirst()) //
                 .withMessageContaining("/i/do/not/exist is not a directory");

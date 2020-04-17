@@ -6,12 +6,13 @@ package org.jmad.modelpack.connect;
 
 public final class ConnectorIds {
 
-    public static final String GITLAB_GROUP_API_V4 = "gitlab-group-api-v4";
-    public static final String INTERNAL_CONNECTOR_ID = "internal-classpath";
-    public static final String LOCAL_FILE_CONNECTOR_ID = "local-file";
+    public static final String GITLAB_HTTP_SCHEME = "gitlab+http";
+    public static final String GITLAB_HTTPS_SCHEME = "gitlab+https";
+    public static final String INTERNAL_SCHEME = "classpath";
+    public static final String LOCAL_FILE_SCHEME = "file";
 
     private ConnectorIds() {
-        /* Only constants */
+        throw new UnsupportedOperationException("static only");
     }
 
 }

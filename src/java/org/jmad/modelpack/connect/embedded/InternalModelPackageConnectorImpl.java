@@ -42,7 +42,7 @@ public class InternalModelPackageConnectorImpl implements InternalModelPackageCo
 
     @Override
     public String connectorId() {
-        return ConnectorIds.INTERNAL_CONNECTOR_ID;
+        return ConnectorIds.INTERNAL_SCHEME;
     }
 
 }

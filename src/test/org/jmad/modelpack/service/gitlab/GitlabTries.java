@@ -26,7 +26,7 @@ public class GitlabTries {
     public void setUp() {
         connector = new GitlabGroupModelPackageConnector();
         repo = new JMadModelPackageRepository("https://gitlab.cern.ch", "jmad-modelpacks-testing",
-                ConnectorIds.GITLAB_GROUP_API_V4);
+                ConnectorIds.GITLAB_HTTPS_SCHEME);
     }
 
     @Test

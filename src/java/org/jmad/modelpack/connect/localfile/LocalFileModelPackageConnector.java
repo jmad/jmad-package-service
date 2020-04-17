@@ -68,7 +68,7 @@ public class LocalFileModelPackageConnector implements InternalModelPackageConne
 
     @Override
     public String connectorId() {
-        return ConnectorIds.LOCAL_FILE_CONNECTOR_ID;
+        return ConnectorIds.LOCAL_FILE_SCHEME;
     }
 
 }
