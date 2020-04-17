@@ -4,7 +4,7 @@
 
 package org.jmad.modelpack.service.gitlab;
 
-import org.jmad.modelpack.connect.ConnectorIds;
+import org.jmad.modelpack.connect.ConnectorUriSchemes;
 import org.jmad.modelpack.connect.gitlab.GitlabGroupModelPackageConnector;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackageVariant;
@@ -25,8 +25,7 @@ public class GitlabTries {
     @Before
     public void setUp() {
         connector = new GitlabGroupModelPackageConnector();
-        repo = new JMadModelPackageRepository("https://gitlab.cern.ch", "jmad-modelpacks-testing",
-                ConnectorIds.GITLAB_HTTPS_SCHEME);
+        repo = JMadModelPackageRepository.fromUri("gitlab+https://gitlab.cern.ch/jmad-modelpacks-testing");
     }
 
     @Test

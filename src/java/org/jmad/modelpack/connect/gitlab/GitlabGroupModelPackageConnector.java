@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
-import org.jmad.modelpack.connect.ConnectorIds;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
@@ -33,8 +32,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
 
-import static org.jmad.modelpack.connect.ConnectorIds.GITLAB_HTTPS_SCHEME;
-import static org.jmad.modelpack.connect.ConnectorIds.GITLAB_HTTP_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTPS_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTP_SCHEME;
 
 public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
@@ -50,7 +49,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         if (!canHandle(repository)) {
             return Flux.empty();
         }
-        String uri = repository.baseUrl() + "/api/v4/groups/" + repository.repoName() + "/projects";
+        String uri = baseUrlOf(repository) + "/api/v4/groups/" + gitlabGroupNameOf(repository) + "/projects";
         LOGGER.info("Querying model packages from '{}'.", uri);
 
         // @formatter:off
@@ -60,15 +59,26 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
+    private static String baseUrlOf(JMadModelPackageRepository repository) {
+        URI uri = repository.repoUri();
+        String protocol = uri.getScheme().replace("gitlab+", "");
+        String host = uri.getAuthority();
+        return protocol + "://" + host;
+    }
+
+    private static String gitlabGroupNameOf(JMadModelPackageRepository repository) {
+        return repository.repoUri().getRawPath().substring(1);
+    }
+
     @Override
     public Mono<Resource> zipResourceFor(ModelPackageVariant modelPackage) {
         ModelPackage pkg = modelPackage.modelPackage();
-        JMadModelPackageRepository repo = pkg.repository();
-        if (!canHandle(repo)) {
+        if (!(pkg instanceof GitlabModelPackage)) {
             return Mono.empty();
         }
+        GitlabModelPackage gitPkg = (GitlabModelPackage) pkg;
 
-        String uri = repositoryUri(repo, pkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
+        String uri = repositoryUri(gitPkg.repository(), gitPkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
         LOGGER.info("Retrieving package from {}.", uri);
 
         return mono(() -> {
@@ -89,7 +99,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     private static boolean filterOutIgnoredRepos(GitlabProject p) {
-        if (p.tag_list.contains(JMAD_IGNORE_TAG)){
+        if (p.tag_list.contains(JMAD_IGNORE_TAG)) {
             LOGGER.info("Ignoring Gitlab project {} because of {} tag", p.name, JMAD_IGNORE_TAG);
             return false;
         }
@@ -115,7 +125,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     private static String repositoryUri(JMadModelPackageRepository repository, String id) {
-        return repository.baseUrl() + "/api/v4/projects/" + id + "/repository";
+        return baseUrlOf(repository) + "/api/v4/projects/" + id + "/repository";
     }
 
     @Override

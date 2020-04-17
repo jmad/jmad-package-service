@@ -24,7 +24,7 @@ public class JMadModelPackageRepository {
 
     public static JMadModelPackageRepository fromUri(String uri) {
         try {
-            return new JMadModelPackageRepository(new URI(uri));
+            return new JMadModelPackageRepository(new URI(uri).normalize());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }

@@ -9,7 +9,7 @@ import cern.accsoft.steering.jmad.util.JMadPreferences;
 import cern.accsoft.steering.jmad.util.TempFileUtilImpl;
 import org.jmad.modelpack.cache.ModelPackageFileCache;
 import org.jmad.modelpack.cache.impl.ModelPackageFileCacheImpl;
-import org.jmad.modelpack.connect.embedded.conf.InternalConnectorConfiguration;
+import org.jmad.modelpack.connect.classpath.conf.InternalConnectorConfiguration;
 import org.jmad.modelpack.connect.gitlab.conf.GitlabConnectorConfiguration;
 import org.jmad.modelpack.connect.localfile.conf.LocalFileConnectorConfiguration;
 import org.jmad.modelpack.service.JMadModelPackageService;

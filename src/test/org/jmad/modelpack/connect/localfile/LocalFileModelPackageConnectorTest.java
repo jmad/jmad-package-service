@@ -3,7 +3,7 @@ package org.jmad.modelpack.connect.localfile;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.io.JMadModelDefinitionImporter;
 import cern.accsoft.steering.jmad.service.JMadService;
-import org.jmad.modelpack.connect.ConnectorIds;
+import org.jmad.modelpack.connect.ConnectorUriSchemes;
 import org.jmad.modelpack.domain.*;
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import org.springframework.util.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -44,7 +45,7 @@ public class LocalFileModelPackageConnectorTest {
         tmpRepoDir = Files.createTempDirectory("test-modelpack");
         createModelpack("modelpack-1");
         createModelpack("test-modelpack");
-        repository = new JMadModelPackageRepository(tmpRepoDir.toAbsolutePath().toString(), "TEST", ConnectorIds.LOCAL_FILE_SCHEME);
+        repository = JMadModelPackageRepository.fromUri("file:" + tmpRepoDir.toAbsolutePath().toString() + "/");
         when(jMadService.getModelDefinitionImporter()).thenReturn(importer);
     }
 
@@ -67,18 +68,18 @@ public class LocalFileModelPackageConnectorTest {
 
     @Test
     public void modelDefinitionsFor_unsupportedModelPack_shouldReturnEmpty() {
-        JMadModelPackageRepository unsupportedRepo = new JMadModelPackageRepository("foo",
-                "TEST", ConnectorIds.INTERNAL_SCHEME);
-        ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, "modelpack-1", "Test");
+        JMadModelPackageRepository unsupportedRepo = JMadModelPackageRepository.fromUri("classpath:///");
+        ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, unsupportedRepo.repoUri());
         ModelPackageVariant variant = new ModelPackageVariant(modelPackage, Variant.release("LOCAL", new Commit("LOCAL", "LOCAL")));
         List<JMadModelDefinition> modelDefinitions = connector.modelDefinitionsFor(variant).collectList().block();
-        verifyZeroInteractions(importer);
+        verifyNoInteractions(importer);
         assertThat(modelDefinitions).isEmpty();
     }
 
     @Test
     public void modelDefinitionsFor_validModelPack_shouldDelegate() {
-        ModelPackage modelPackage = new ModelPackage("modelpack-1", repository, "modelpack-1", "Test");
+        ModelPackage modelPackage = new ModelPackage("modelpack-1", repository,
+                repository.repoUri().resolve("modelpack-1"));
         ModelPackageVariant variant = new ModelPackageVariant(modelPackage, Variant.release("LOCAL", new Commit("LOCAL", "LOCAL")));
         connector.modelDefinitionsFor(variant).blockFirst();
         verify(importer, times(1)).importModelDefinitions(modelpackPath("modelpack-1").toFile());
@@ -86,26 +87,25 @@ public class LocalFileModelPackageConnectorTest {
 
     @Test
     public void availablePackages_forUnsupportedModelRepo_shouldReturnEmpty() {
-        JMadModelPackageRepository repo = new JMadModelPackageRepository("foo",
-                "TEST", ConnectorIds.INTERNAL_SCHEME);
-        List<ModelPackageVariant> allModelPacks = connector.availablePackages(repo).collectList().block();
+        JMadModelPackageRepository unsupportedRepo = JMadModelPackageRepository.fromUri("classpath:///");
+        List<ModelPackageVariant> allModelPacks = connector.availablePackages(unsupportedRepo).collectList().block();
         assertThat(allModelPacks).isEmpty();
     }
 
     @Test
     public void availablePackages_forSupportedModelRepoButBadDirectory_shouldReturnError() {
-        JMadModelPackageRepository repo = new JMadModelPackageRepository("/i/do/not/exist",
-                "TEST", ConnectorIds.LOCAL_FILE_SCHEME);
+        JMadModelPackageRepository repo = JMadModelPackageRepository.fromUri("file:///i/do/not/exist");
         assertThatExceptionOfType(IllegalArgumentException.class) //
                 .isThrownBy(() -> connector.availablePackages(repo).blockFirst()) //
                 .withMessageContaining("/i/do/not/exist is not a directory");
     }
 
     @Test
-    public void availablePackages_forSupportedModelRepo_shouldListModelPacks() throws Exception {
+    public void availablePackages_forSupportedModelRepo_shouldListModelPacks() {
+        String repoUri = repository.repoUri().toString();
         List<ModelPackageVariant> allModelPacks = connector.availablePackages(repository).collectList().block();
-        assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::id))
-                .containsExactlyInAnyOrder("modelpack-1", "test-modelpack");
+        assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::uri).map(URI::toString))
+                .containsExactlyInAnyOrder(repoUri + "modelpack-1", repoUri + "test-modelpack");
         assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::name))
                 .containsExactlyInAnyOrder("LOCAL-modelpack-1", "LOCAL-test-modelpack");
     }
@@ -115,7 +115,7 @@ public class LocalFileModelPackageConnectorTest {
         Files.createDirectory(modelpackPath("NOT-A-modelpack"));
         Files.createDirectory(modelpackPath("YET-another-FAKE-modelpack"));
         List<ModelPackageVariant> allModelPacks = connector.availablePackages(repository).collectList().block();
-        assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::id))
+        assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::uri).map(URI::toString))
                 .doesNotContain("NOT-A-modelpack", "YET-another-FAKE-modelpack");
         assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::name))
                 .doesNotContain("LOCAL-NOT-A-modelpack", "LOCAL-YET-another-FAKE-modelpack");

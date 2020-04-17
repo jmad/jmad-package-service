@@ -24,11 +24,7 @@ public class GitlabModelPackage extends ModelPackage {
     }
 
     private static URI buildGitlabUri(JMadModelPackageRepository repository, String projectId) {
-        try {
-            return new URI(repository.repoUri().toString() + "/" + repository);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return repository.repoUri().resolve(projectId);
     }
 
     public String name() {

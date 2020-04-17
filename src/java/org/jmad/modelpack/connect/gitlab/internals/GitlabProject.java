@@ -4,6 +4,7 @@
 
 package org.jmad.modelpack.connect.gitlab.internals;
 
+import org.jmad.modelpack.connect.gitlab.GitlabModelPackage;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageVariant;
@@ -20,7 +21,7 @@ public class GitlabProject {
     public List<String> tag_list;
 
     public ModelPackageVariant toModelPackage(JMadModelPackageRepository repo, Variant variant) {
-        ModelPackage pkg = new ModelPackage(name, repo, id, description == null ? "" : description);
+        ModelPackage pkg = new GitlabModelPackage(name, repo, id, description == null ? "" : description);
         return new ModelPackageVariant(pkg, variant);
     }
 
