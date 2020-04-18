@@ -5,7 +5,9 @@
 package org.jmad.modelpack.connect.gitlab;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,8 +22,8 @@ import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabTag;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
-import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.ModelPackages;
 import org.jmad.modelpack.domain.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,20 +64,63 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
+    @Override
+    public Mono<ModelPackageVariant> packageFromUri(URI rawUri) {
+        if (!canHandle(rawUri)) {
+            return Mono.empty();
+        }
+        URI uri = rawUri.normalize();
+        String uriPath = uri.getRawPath();
+        int firstSlash = uriPath.indexOf("/", 1);
+        if (firstSlash == -1) {
+            return Mono.error(new IllegalArgumentException("Malformed GitLab URI: " + uri));
+        }
+        String gitlabGroupPath = uriPath.substring(0, firstSlash + 1);
+        JMadModelPackageRepository repository;
+        try {
+            repository = JMadModelPackageRepository.fromUri(new URI(uri.getScheme(), uri.getRawAuthority(),
+                    gitlabGroupPath, null));
+        } catch (URISyntaxException e) {
+            return Mono.error(e);
+        }
+        String modelPackPart = uriPath.substring(firstSlash + 1);
+        int firstAt = modelPackPart.indexOf("@");
+        String modelPackName;
+        Optional<String> modelPackVariant;
+        if (firstAt == -1) {
+            modelPackName = modelPackPart;
+            modelPackVariant = Optional.empty();
+        } else {
+            modelPackName = modelPackPart.substring(0, firstAt);
+            modelPackVariant = Optional.of(modelPackPart.substring(firstAt + 1));
+        }
+        return availablePackages(repository)
+                .filter(mpv -> mpv.modelPackage().name().equals(modelPackName))
+                .filter(mpv -> modelPackVariant.map(mpv.variant().name()::equals).orElse(true))
+                .sort(ModelPackages.latestFirstPackageVariantComparator())
+                .next();
+    }
+
     public ModelPackageVariant modelPackageVariant(JMadModelPackageRepository repo,
                                                    GitlabProject project, GitlabVariant variant) {
         return new GitlabModelPackageVariant(new GitlabModelPackage(project, repo), variant);
     }
 
     private static String baseUrlOf(JMadModelPackageRepository repository) {
-        URI uri = repository.repoUri();
+        URI uri = repository.uri();
         String protocol = uri.getScheme().replace("gitlab+", "");
         String host = uri.getAuthority();
         return protocol + "://" + host;
     }
 
     private static String gitlabGroupNameOf(JMadModelPackageRepository repository) {
-        return repository.repoUri().getRawPath().substring(1);
+        String uriPath = repository.uri().getRawPath();
+        int firstSlash = uriPath.indexOf("/", 1);
+        if (firstSlash == -1) {
+            return uriPath.substring(1);
+        } else {
+            return uriPath.substring(1, firstSlash);
+        }
     }
 
     @Override

@@ -18,6 +18,10 @@ public class JMadModelPackageRepository {
         this.repositoryUri = requireNonNull(uri, "URI must not be null");
     }
 
+    public static JMadModelPackageRepository fromUri(URI uri) {
+        return new JMadModelPackageRepository(normalizedUri(uri.toASCIIString()));
+    }
+
     public static JMadModelPackageRepository fromUri(String uri) {
         return new JMadModelPackageRepository(normalizedUri(uri));
     }
@@ -25,7 +29,7 @@ public class JMadModelPackageRepository {
     private static URI normalizedUri(String uriString) {
         try {
             URI uri = new URI(uriString).normalize();
-            if (uri.getPath().endsWith("/") || uri.getPath().isEmpty()) {
+            if (uri.getPath() == null || uri.getPath().isEmpty() || uri.getPath().endsWith("/")) {
                 return uri;
             }
             return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath() + "/",
@@ -35,7 +39,7 @@ public class JMadModelPackageRepository {
         }
     }
 
-    public URI repoUri() {
+    public URI uri() {
         return repositoryUri;
     }
 
@@ -45,7 +49,7 @@ public class JMadModelPackageRepository {
 
     @Override
     public String toString() {
-        return "JMadModelPackageRepository [uri=" + repositoryUri + "]";
+        return repositoryUri.toString();
     }
 
     @Override

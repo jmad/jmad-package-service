@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.net.URI;
@@ -52,7 +53,7 @@ public class LocalFileModelPackageConnector implements DirectModelPackageConnect
             return Flux.empty();
         }
         try {
-            File dir = new File(repository.repoUri().getPath());
+            File dir = new File(repository.uri().getPath());
             LOGGER.info("Searching for local models in {}", dir);
             if (!dir.isDirectory()) {
                 return Flux.error(new IllegalArgumentException(dir.getAbsolutePath() + " is not a directory."));
@@ -63,8 +64,35 @@ public class LocalFileModelPackageConnector implements DirectModelPackageConnect
                             .map(File::getName) //
                             .map(n -> modelPackage(n, repository)));
         } catch (Exception e) {
-            LOGGER.error("Error loading LOCAL repository '{}'", repository.repoUri(), e);
+            LOGGER.error("Error loading LOCAL repository '{}'", repository.uri(), e);
             return Flux.error(e);
+        }
+    }
+
+    @Override
+    public Mono<ModelPackageVariant> packageFromUri(URI uri) {
+        if (!canHandle(uri)) {
+            return Mono.empty();
+        }
+        try {
+            File path = new File(uri.normalize().getPath());
+            if (!path.exists()) {
+                return Mono.error(new IllegalArgumentException("Can not find directory " + path.getAbsolutePath()));
+            }
+            LOGGER.info("Searching for local models in {}", path);
+            File parent = path.getParentFile();
+            if (!parent.isDirectory()) {
+                return Mono.error(new IllegalArgumentException(parent.getAbsolutePath() + " is not a directory"));
+            }
+            if (ModelDefinitionUtil.modelDefinitionFilesBelow(parent.toPath()).isEmpty()) {
+                return Mono.error(new IllegalArgumentException("No JMad models found in " + path));
+            }
+            JMadModelPackageRepository repo = JMadModelPackageRepository.fromUri(new URI(LOCAL_FILE_SCHEME, null,
+                    parent.toPath().toUri().getRawPath() + "/", null));
+            return Mono.just(modelPackage(path.getName(), repo));
+        } catch (Exception e) {
+            LOGGER.error("Error loading LOCAL model pack from URI '{}'", uri, e);
+            return Mono.error(e);
         }
     }
 
@@ -74,7 +102,7 @@ public class LocalFileModelPackageConnector implements DirectModelPackageConnect
     }
 
     private ModelPackageVariant modelPackage(String name, JMadModelPackageRepository repository) {
-        URI modelPackUri = repository.repoUri().resolve(name);
+        URI modelPackUri = repository.uri().resolve(name);
         ModelPackage modelPackage = new ModelPackage(LOCAL_NAME_PREFIX + name, repository, modelPackUri);
         return new ModelPackageVariant(modelPackUri, modelPackage, LOCAL_VARIANT);
     }

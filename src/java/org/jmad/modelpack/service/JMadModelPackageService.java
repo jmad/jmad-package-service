@@ -6,6 +6,8 @@ import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+
 /**
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
@@ -18,6 +20,8 @@ import reactor.core.publisher.Mono;
  * @author kfuchsbe
  */
 public interface JMadModelPackageService {
+
+    Mono<ModelPackageVariant> packageFromUri(URI uri);
 
     Flux<ModelPackageVariant> availablePackages();
 

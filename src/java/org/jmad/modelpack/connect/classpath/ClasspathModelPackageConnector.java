@@ -14,7 +14,9 @@ import org.jmad.modelpack.domain.Variant;
 import org.jmad.modelpack.domain.VariantType;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 
@@ -23,6 +25,11 @@ import static org.jmad.modelpack.connect.ConnectorUriSchemes.INTERNAL_SCHEME;
 public class ClasspathModelPackageConnector implements DirectModelPackageConnector {
     private static final String INTERNAL = "INTERNAL";
     private static final Variant INTERNAL_VARIANT = new Variant(INTERNAL, VariantType.RELEASE);
+    public static final URI INTERNAL_URI = URI.create(INTERNAL_SCHEME + ":/");
+    public static final ModelPackage INTERNAL_MODEL_PACKAGE = new ModelPackage(INTERNAL,
+            JMadModelPackageRepository.fromUri(INTERNAL_URI), INTERNAL_URI);
+    private static final ModelPackageVariant INTERNAL_MODEL_PACKAGE_VARIANT = new ModelPackageVariant(INTERNAL_URI,
+            INTERNAL_MODEL_PACKAGE, INTERNAL_VARIANT);
 
     @Autowired
     private JMadService jmadService;
@@ -30,15 +37,19 @@ public class ClasspathModelPackageConnector implements DirectModelPackageConnect
     @Override
     public Flux<ModelPackageVariant> availablePackages(JMadModelPackageRepository repository) {
         if (canHandle(repository)) {
-            return Flux.just(internalModelPackVariant(repository));
+            return Flux.just(INTERNAL_MODEL_PACKAGE_VARIANT);
         } else {
             return Flux.empty();
         }
     }
 
-    private static ModelPackageVariant internalModelPackVariant(JMadModelPackageRepository repository) {
-        return new ModelPackageVariant(repository.repoUri(),
-                new ModelPackage(INTERNAL, repository, repository.repoUri()), INTERNAL_VARIANT);
+    @Override
+    public Mono<ModelPackageVariant> packageFromUri(URI uri) {
+        if (canHandle(uri)) {
+            return Mono.just(INTERNAL_MODEL_PACKAGE_VARIANT);
+        } else {
+            return Mono.empty();
+        }
     }
 
     @Override

@@ -3,7 +3,6 @@ package org.jmad.modelpack.connect.localfile;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.io.JMadModelDefinitionImporter;
 import cern.accsoft.steering.jmad.service.JMadService;
-import org.jmad.modelpack.connect.gitlab.domain.Commit;
 import org.jmad.modelpack.domain.*;
 import org.junit.After;
 import org.junit.Before;
@@ -69,8 +68,8 @@ public class LocalFileModelPackageConnectorTest {
     @Test
     public void modelDefinitionsFor_unsupportedModelPack_shouldReturnEmpty() {
         JMadModelPackageRepository unsupportedRepo = JMadModelPackageRepository.fromUri("classpath:///");
-        ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, unsupportedRepo.repoUri());
-        ModelPackageVariant variant = new ModelPackageVariant(unsupportedRepo.repoUri(), modelPackage,
+        ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, unsupportedRepo.uri());
+        ModelPackageVariant variant = new ModelPackageVariant(unsupportedRepo.uri(), modelPackage,
                 new Variant("LOCAL", VariantType.RELEASE));
         List<JMadModelDefinition> modelDefinitions = connector.modelDefinitionsFor(variant).collectList().block();
         verifyNoInteractions(importer);
@@ -80,11 +79,34 @@ public class LocalFileModelPackageConnectorTest {
     @Test
     public void modelDefinitionsFor_validModelPack_shouldDelegate() {
         ModelPackage modelPackage = new ModelPackage("modelpack-1", repository,
-                repository.repoUri().resolve("modelpack-1"));
+                repository.uri().resolve("modelpack-1"));
         ModelPackageVariant variant = new ModelPackageVariant(modelPackage.uri(), modelPackage,
                 new Variant("LOCAL", VariantType.RELEASE));
         connector.modelDefinitionsFor(variant).blockFirst();
         verify(importer, times(1)).importModelDefinitions(modelpackPath("modelpack-1").toFile());
+    }
+
+    @Test
+    public void packageFromUri_forSupportedAndValidUri_shouldReturn() {
+        URI uri = URI.create(repository.uri().toASCIIString() + "modelpack-1");
+        ModelPackageVariant mpv =
+                connector.packageFromUri(uri).block();
+        assertThat(mpv).isNotNull();
+        assertThat(mpv.modelPackage().name()).isEqualTo("LOCAL-modelpack-1");
+        assertThat(mpv.uri()).isEqualTo(uri);
+    }
+
+    @Test
+    public void packageFromUri_forUnsupportedUri_shouldReturnEmpty() {
+        ModelPackageVariant mpv = connector.packageFromUri(URI.create("classpath:/modelpack-1")).block();
+        assertThat(mpv).isNull();
+    }
+
+    @Test
+    public void packageFromUri_forSupportedButBadDirectory_shouldReturnError() {
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(
+                () -> connector.packageFromUri(URI.create(repository.uri().toASCIIString() + "/FAIL")).block())
+                .withMessageContaining("Can not find directory");
     }
 
     @Test
@@ -104,7 +126,7 @@ public class LocalFileModelPackageConnectorTest {
 
     @Test
     public void availablePackages_forSupportedModelRepo_shouldListModelPacks() {
-        String repoUri = repository.repoUri().toString();
+        String repoUri = repository.uri().toString();
         List<ModelPackageVariant> allModelPacks = connector.availablePackages(repository).collectList().block();
         assertThat(allModelPacks.stream().map(ModelPackageVariant::modelPackage).map(ModelPackage::uri).map(URI::toString))
                 .containsExactlyInAnyOrder(repoUri + "modelpack-1", repoUri + "test-modelpack");

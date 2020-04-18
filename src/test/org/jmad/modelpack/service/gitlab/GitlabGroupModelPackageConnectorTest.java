@@ -6,7 +6,10 @@ package org.jmad.modelpack.service.gitlab;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
+import static org.jmad.modelpack.domain.VariantType.BRANCH;
+import static org.jmad.modelpack.domain.VariantType.RELEASE;
 
+import java.net.URI;
 import java.util.List;
 
 import org.jmad.modelpack.connect.ModelPackageConnector;
@@ -21,6 +24,7 @@ import reactor.core.publisher.Flux;
 public class GitlabGroupModelPackageConnectorTest {
 
     private static final JMadModelPackageRepository REPO = cernGitlabTesting();
+    public static final String LHC_TESTING_REPO = "jmad-modelpack-lhc-testing";
     private ModelPackageConnector service;
 
     @Before
@@ -35,7 +39,27 @@ public class GitlabGroupModelPackageConnectorTest {
 
     @Test
     public void containsLhcModel() {
-        assertThat(cernModels().stream().anyMatch(p -> p.modelPackage().name().equals("jmad-modelpack-lhc-testing"))).isTrue();
+        assertThat(cernModels().stream().anyMatch(p -> p.modelPackage().name().equals(LHC_TESTING_REPO))).isTrue();
+    }
+
+    @Test
+    public void resolvesLhcModelUriWithVariantToMaster() {
+        ModelPackageVariant mpv = service.packageFromUri(URI.create(lhcTestRepoUri() + "@master")).block();
+        assertThat(mpv).isNotNull();
+        assertThat(mpv.variant().name()).isEqualTo("master");
+        assertThat(mpv.variant().type()).isEqualTo(BRANCH);
+    }
+
+    @Test
+    public void resolvesLhcModelUriWithoutVariantToLatestRelease() {
+        ModelPackageVariant mpv = service.packageFromUri(URI.create(lhcTestRepoUri())).block();
+        assertThat(mpv).isNotNull();
+        assertThat(mpv.variant().name()).isEqualTo("v2018.1");
+        assertThat(mpv.variant().type()).isEqualTo(RELEASE);
+    }
+
+    private String lhcTestRepoUri() {
+        return cernGitlabTesting().uri() + "/" + LHC_TESTING_REPO;
     }
 
     @Test
