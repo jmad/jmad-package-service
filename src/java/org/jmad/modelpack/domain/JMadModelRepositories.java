@@ -28,7 +28,7 @@ public class JMadModelRepositories {
     }
 
     public static JMadModelPackageRepository internal() {
-        return JMadModelPackageRepository.fromUri(INTERNAL_SCHEME + ":");
+        return JMadModelPackageRepository.fromUri(INTERNAL_SCHEME + ":/");
     }
 
     public static Optional<JMadModelPackageRepository> defaultLocalFileRepository() {
@@ -41,7 +41,7 @@ public class JMadModelRepositories {
     }
 
     private static JMadModelPackageRepository cernGitlabGroup(String groupName) {
-        return JMadModelPackageRepository.fromUri(CERN_GITLAB + groupName + "/");
+        return JMadModelPackageRepository.fromUri(CERN_GITLAB + groupName);
     }
 
 }

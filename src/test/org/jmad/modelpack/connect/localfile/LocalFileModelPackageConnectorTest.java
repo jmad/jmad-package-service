@@ -3,7 +3,7 @@ package org.jmad.modelpack.connect.localfile;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.io.JMadModelDefinitionImporter;
 import cern.accsoft.steering.jmad.service.JMadService;
-import org.jmad.modelpack.connect.ConnectorUriSchemes;
+import org.jmad.modelpack.connect.gitlab.domain.Commit;
 import org.jmad.modelpack.domain.*;
 import org.junit.After;
 import org.junit.Before;
@@ -45,7 +45,7 @@ public class LocalFileModelPackageConnectorTest {
         tmpRepoDir = Files.createTempDirectory("test-modelpack");
         createModelpack("modelpack-1");
         createModelpack("test-modelpack");
-        repository = JMadModelPackageRepository.fromUri("file:" + tmpRepoDir.toAbsolutePath().toString() + "/");
+        repository = JMadModelPackageRepository.fromUri("file:" + tmpRepoDir.toAbsolutePath().toString());
         when(jMadService.getModelDefinitionImporter()).thenReturn(importer);
     }
 
@@ -70,7 +70,8 @@ public class LocalFileModelPackageConnectorTest {
     public void modelDefinitionsFor_unsupportedModelPack_shouldReturnEmpty() {
         JMadModelPackageRepository unsupportedRepo = JMadModelPackageRepository.fromUri("classpath:///");
         ModelPackage modelPackage = new ModelPackage("modelpack-1", unsupportedRepo, unsupportedRepo.repoUri());
-        ModelPackageVariant variant = new ModelPackageVariant(modelPackage, Variant.release("LOCAL", new Commit("LOCAL", "LOCAL")));
+        ModelPackageVariant variant = new ModelPackageVariant(unsupportedRepo.repoUri(), modelPackage,
+                new Variant("LOCAL", VariantType.RELEASE));
         List<JMadModelDefinition> modelDefinitions = connector.modelDefinitionsFor(variant).collectList().block();
         verifyNoInteractions(importer);
         assertThat(modelDefinitions).isEmpty();
@@ -80,7 +81,8 @@ public class LocalFileModelPackageConnectorTest {
     public void modelDefinitionsFor_validModelPack_shouldDelegate() {
         ModelPackage modelPackage = new ModelPackage("modelpack-1", repository,
                 repository.repoUri().resolve("modelpack-1"));
-        ModelPackageVariant variant = new ModelPackageVariant(modelPackage, Variant.release("LOCAL", new Commit("LOCAL", "LOCAL")));
+        ModelPackageVariant variant = new ModelPackageVariant(modelPackage.uri(), modelPackage,
+                new Variant("LOCAL", VariantType.RELEASE));
         connector.modelDefinitionsFor(variant).blockFirst();
         verify(importer, times(1)).importModelDefinitions(modelpackPath("modelpack-1").toFile());
     }

@@ -13,6 +13,9 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 import org.jmad.modelpack.connect.ZipModelPackageConnector;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabModelPackage;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabModelPackageVariant;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabVariant;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
 import org.jmad.modelpack.connect.gitlab.internals.GitlabTag;
@@ -55,8 +58,13 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:off
         return flux(uri,GitlabProject[].class)
                 .filter(GitlabGroupModelPackageConnector::filterOutIgnoredRepos)
-                .flatMap(p -> variantsFor(repository, p).map(v -> p.toModelPackage(repository, v)));
+                .flatMap(p -> variantsFor(repository, p).map(v -> modelPackageVariant(repository, p, v)));
         // @formatter:on
+    }
+
+    public ModelPackageVariant modelPackageVariant(JMadModelPackageRepository repo,
+                                                   GitlabProject project, GitlabVariant variant) {
+        return new GitlabModelPackageVariant(new GitlabModelPackage(project, repo), variant);
     }
 
     private static String baseUrlOf(JMadModelPackageRepository repository) {
@@ -71,14 +79,14 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     @Override
-    public Mono<Resource> zipResourceFor(ModelPackageVariant modelPackage) {
-        ModelPackage pkg = modelPackage.modelPackage();
-        if (!(pkg instanceof GitlabModelPackage)) {
+    public Mono<Resource> zipResourceFor(ModelPackageVariant modelPackageVariant) {
+        if (!(modelPackageVariant instanceof GitlabModelPackageVariant)) {
             return Mono.empty();
         }
-        GitlabModelPackage gitPkg = (GitlabModelPackage) pkg;
+        GitlabModelPackageVariant pkgVariant = (GitlabModelPackageVariant) modelPackageVariant;
+        GitlabModelPackage pkg = (GitlabModelPackage) pkgVariant.modelPackage();
 
-        String uri = repositoryUri(gitPkg.repository(), gitPkg.id()) + "/archive.zip" + variantParam(modelPackage.variant());
+        String uri = repositoryUri(pkg.repository(), pkg.id()) + "/archive.zip" + variantParam(pkgVariant.variant());
         LOGGER.info("Retrieving package from {}.", uri);
 
         return mono(() -> {
@@ -94,7 +102,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         return "?sha=" + variant.name();
     }
 
-    public Flux<Variant> variantsFor(JMadModelPackageRepository repo, GitlabProject pkg) {
+    public Flux<GitlabVariant> variantsFor(JMadModelPackageRepository repo, GitlabProject pkg) {
         return Flux.merge(tagsFor(repo, pkg.id), branchesFor(repo, pkg.id));
     }
 
@@ -106,7 +114,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         return true;
     }
 
-    private Flux<Variant> branchesFor(JMadModelPackageRepository repository, String id) {
+    private Flux<GitlabVariant> branchesFor(JMadModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/branches";
 
         // @formatter:off
@@ -115,7 +123,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
         // @formatter:on
     }
 
-    private Flux<Variant> tagsFor(JMadModelPackageRepository repository, String id) {
+    private Flux<GitlabVariant> tagsFor(JMadModelPackageRepository repository, String id) {
         String uri = repositoryUri(repository, id) + "/tags";
 
         // @formatter:off

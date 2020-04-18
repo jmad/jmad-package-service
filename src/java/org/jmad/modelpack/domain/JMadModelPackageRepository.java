@@ -14,17 +14,22 @@ public class JMadModelPackageRepository {
 
     private final URI repositoryUri;
 
-    public JMadModelPackageRepository(URI uri) {
+    private JMadModelPackageRepository(URI uri) {
         this.repositoryUri = requireNonNull(uri, "URI must not be null");
     }
 
-    public static JMadModelPackageRepository fromUri(URI uri) {
-        return new JMadModelPackageRepository(uri);
+    public static JMadModelPackageRepository fromUri(String uri) {
+        return new JMadModelPackageRepository(normalizedUri(uri));
     }
 
-    public static JMadModelPackageRepository fromUri(String uri) {
+    private static URI normalizedUri(String uriString) {
         try {
-            return new JMadModelPackageRepository(new URI(uri).normalize());
+            URI uri = new URI(uriString).normalize();
+            if (uri.getPath().endsWith("/") || uri.getPath().isEmpty()) {
+                return uri;
+            }
+            return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath() + "/",
+                    uri.getQuery(), uri.getFragment());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }

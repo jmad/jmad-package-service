@@ -2,7 +2,7 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.domain;
+package org.jmad.modelpack.connect.gitlab.domain;
 
 import static java.util.Objects.requireNonNull;
 

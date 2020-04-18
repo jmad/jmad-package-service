@@ -4,7 +4,11 @@
 
 package org.jmad.modelpack.connect.gitlab.internals;
 
+import org.jmad.modelpack.connect.gitlab.domain.GitlabVariant;
 import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
+
+import static org.jmad.modelpack.domain.VariantType.BRANCH;
 
 public class GitlabBranch {
     public String name;
@@ -53,8 +57,8 @@ public class GitlabBranch {
         return "GitlabBranch [name=" + name + ", commit=" + commit + "]";
     }
 
-    public Variant toBranch() {
-        return Variant.branch(name, commit.toCommit());
+    public GitlabVariant toBranch() {
+        return new GitlabVariant(name, commit.toCommit(), BRANCH);
     }
 
 }

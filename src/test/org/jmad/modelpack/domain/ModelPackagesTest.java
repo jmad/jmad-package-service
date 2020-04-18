@@ -4,30 +4,26 @@
 
 package org.jmad.modelpack.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.jmad.modelpack.domain.ModelPackages.latestLastVariantComparator;
-import static org.jmad.modelpack.domain.VariantType.BRANCH;
-import static org.jmad.modelpack.domain.VariantType.RELEASE;
-import static org.jmad.modelpack.domain.VariantType.TAG;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.jmad.modelpack.domain.ModelPackages.latestLastVariantComparator;
+import static org.jmad.modelpack.domain.VariantType.BRANCH;
+import static org.jmad.modelpack.domain.VariantType.RELEASE;
+import static org.jmad.modelpack.domain.VariantType.TAG;
 
 @RunWith(JUnitParamsRunner.class)
 public class ModelPackagesTest {
-
-    private static final Commit ANY_COMMIT = Mockito.mock(Commit.class);
-
-    private static final List<Variant> SORTED_EXPECTED = Arrays.asList(null, null, /* nulls first */
+    private static final List<Variant> SORTED_EXPECTED = asList(null, null, /* nulls first */
             /* branches (alphabetically only, no version recognized) */
             branch("A"), branch("v2018.10"), branch("v2018.2"), branch("zzz"),
             /* tags (alphabetically only, no version recognized) */
@@ -39,8 +35,8 @@ public class ModelPackagesTest {
 
     @Test
     public void releaseIsLast() {
-        Variant release = new Variant("", ANY_COMMIT, RELEASE);
-        Variant tag = new Variant("", ANY_COMMIT, TAG);
+        Variant release = new Variant("", RELEASE);
+        Variant tag = new Variant("", TAG);
 
         assertThat(latestLastVariantComparator().compare(release, tag)).isEqualTo(1);
     }
@@ -67,7 +63,7 @@ public class ModelPackagesTest {
     @Parameters(method = "shuffledLists")
     public void randomShuffleSorting(List<Variant> listToSort) {
         ArrayList<Variant> copy = new ArrayList<>(listToSort);
-        Collections.sort(copy, latestLastVariantComparator());
+        copy.sort(latestLastVariantComparator());
         assertThat(copy).isEqualTo(SORTED_EXPECTED);
     }
 
@@ -88,20 +84,20 @@ public class ModelPackagesTest {
     }
 
     private static Variant release(String name) {
-        return new Variant(name, ANY_COMMIT, RELEASE);
+        return new Variant(name, RELEASE);
     }
 
     private static Variant tag(String name) {
-        return new Variant(name, ANY_COMMIT, TAG);
+        return new Variant(name, TAG);
     }
 
     private static Variant branch(String name) {
-        return new Variant(name, ANY_COMMIT, BRANCH);
+        return new Variant(name, BRANCH);
     }
 
-    private static List<Variant> sort(Variant... strings) {
-        List<Variant> list = Arrays.asList(strings);
-        Collections.sort(list, latestLastVariantComparator());
+    private static List<Variant> sort(Variant... variants) {
+        List<Variant> list = new ArrayList<>(asList(variants));
+        list.sort(latestLastVariantComparator());
         return list;
     }
 

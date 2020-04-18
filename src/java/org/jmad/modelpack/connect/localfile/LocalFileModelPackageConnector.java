@@ -3,9 +3,12 @@ package org.jmad.modelpack.connect.localfile;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil;
 import cern.accsoft.steering.jmad.service.JMadService;
-import org.jmad.modelpack.connect.ConnectorUriSchemes;
 import org.jmad.modelpack.connect.DirectModelPackageConnector;
-import org.jmad.modelpack.domain.*;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackage;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,6 @@ import reactor.core.publisher.Flux;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Arrays.stream;
@@ -23,7 +25,7 @@ import static org.jmad.modelpack.connect.ConnectorUriSchemes.LOCAL_FILE_SCHEME;
 
 public class LocalFileModelPackageConnector implements DirectModelPackageConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileModelPackageConnector.class);
-    private static final Variant LOCAL_VARIANT = Variant.release("LOCAL", new Commit("LOCAL", "LOCAL"));
+    private static final Variant LOCAL_VARIANT = new Variant("LOCAL", VariantType.RELEASE);
     private static final String LOCAL_NAME_PREFIX = "LOCAL-";
 
     @Autowired
@@ -74,7 +76,7 @@ public class LocalFileModelPackageConnector implements DirectModelPackageConnect
     private ModelPackageVariant modelPackage(String name, JMadModelPackageRepository repository) {
         URI modelPackUri = repository.repoUri().resolve(name);
         ModelPackage modelPackage = new ModelPackage(LOCAL_NAME_PREFIX + name, repository, modelPackUri);
-        return new ModelPackageVariant(modelPackage, LOCAL_VARIANT);
+        return new ModelPackageVariant(modelPackUri, modelPackage, LOCAL_VARIANT);
     }
 
 }

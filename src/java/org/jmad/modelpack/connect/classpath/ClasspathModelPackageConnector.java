@@ -7,11 +7,11 @@ package org.jmad.modelpack.connect.classpath;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.service.JMadService;
 import org.jmad.modelpack.connect.DirectModelPackageConnector;
-import org.jmad.modelpack.domain.Commit;
 import org.jmad.modelpack.domain.JMadModelPackageRepository;
 import org.jmad.modelpack.domain.ModelPackage;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 
@@ -21,8 +21,8 @@ import java.util.Set;
 import static org.jmad.modelpack.connect.ConnectorUriSchemes.INTERNAL_SCHEME;
 
 public class ClasspathModelPackageConnector implements DirectModelPackageConnector {
-    public static final String INTERNAL = "INTERNAL";
-    private static final Variant INTERNAL_VARIANT = Variant.release(INTERNAL, new Commit(INTERNAL, INTERNAL));
+    private static final String INTERNAL = "INTERNAL";
+    private static final Variant INTERNAL_VARIANT = new Variant(INTERNAL, VariantType.RELEASE);
 
     @Autowired
     private JMadService jmadService;
@@ -37,7 +37,8 @@ public class ClasspathModelPackageConnector implements DirectModelPackageConnect
     }
 
     private static ModelPackageVariant internalModelPackVariant(JMadModelPackageRepository repository) {
-        return new ModelPackageVariant(new ModelPackage(INTERNAL, repository, repository.repoUri()), INTERNAL_VARIANT);
+        return new ModelPackageVariant(repository.repoUri(),
+                new ModelPackage(INTERNAL, repository, repository.repoUri()), INTERNAL_VARIANT);
     }
 
     @Override
