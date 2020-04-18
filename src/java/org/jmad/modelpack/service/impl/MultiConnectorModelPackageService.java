@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinitionImpl;
 import org.jmad.modelpack.cache.ModelPackageFileCache;
 import org.jmad.modelpack.connect.DirectModelPackageConnector;
 import org.jmad.modelpack.connect.ModelPackageConnector;
@@ -71,7 +72,13 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
 
     @Override
     public Flux<JMadModelDefinition> modelDefinitionsFrom(ModelPackageVariant modelPackage) {
-        return definitionsFromDirect(modelPackage).switchIfEmpty(definitionsFromFile(modelPackage));
+        return definitionsFromDirect(modelPackage).switchIfEmpty(definitionsFromFile(modelPackage))
+                .doOnNext(md -> setModelPackUri(md, modelPackage));
+    }
+
+    private static void setModelPackUri(JMadModelDefinition md, ModelPackageVariant modelPackage) {
+        JMadModelDefinitionImpl modelDefinition = (JMadModelDefinitionImpl) md;
+        modelDefinition.setModelPackUri(modelPackage.uri().toASCIIString());
     }
 
     @Override

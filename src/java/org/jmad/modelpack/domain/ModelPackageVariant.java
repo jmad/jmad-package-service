@@ -33,6 +33,10 @@ public class ModelPackageVariant {
         return modelPackage.name() + "-" + variant.fullName();
     }
 
+    public URI uri() {
+        return uri;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
