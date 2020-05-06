@@ -4,16 +4,15 @@
 
 package org.jmad.modelpack.domain;
 
-import org.jmad.modelpack.connect.embedded.domain.InternalRepository;
-
 import java.util.Optional;
 
-import static org.jmad.modelpack.connect.ConnectorIds.GITLAB_GROUP_API_V4;
-import static org.jmad.modelpack.connect.ConnectorIds.LOCAL_FILE_CONNECTOR_ID;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTPS_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.INTERNAL_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.LOCAL_FILE_SCHEME;
 
 public class JMadModelRepositories {
 
-    private static final String CERN_GITLAB = "https://gitlab.cern.ch";
+    private static final String CERN_GITLAB = GITLAB_HTTPS_SCHEME + "://gitlab.cern.ch/";
     private static final String PROP_LOCAL_MODEL_REPO = "cern.jmad.modelpacks.local";
 
     public static JMadModelPackageRepository cernGitlabTesting() {
@@ -28,8 +27,8 @@ public class JMadModelRepositories {
         return cernGitlabGroup("acc-models");
     }
 
-    public static InternalRepository internal() {
-        return InternalRepository.INTERNAL;
+    public static JMadModelPackageRepository internal() {
+        return JMadModelPackageRepository.fromUri(INTERNAL_SCHEME + ":/");
     }
 
     public static Optional<JMadModelPackageRepository> defaultLocalFileRepository() {
@@ -37,13 +36,12 @@ public class JMadModelRepositories {
         if (localModelRepo == null) {
             return Optional.empty();
         } else {
-
-            return Optional.of(new JMadModelPackageRepository(localModelRepo, "LOCAL", LOCAL_FILE_CONNECTOR_ID));
+            return Optional.of(JMadModelPackageRepository.fromUri(LOCAL_FILE_SCHEME + ":" + localModelRepo));
         }
     }
 
     private static JMadModelPackageRepository cernGitlabGroup(String groupName) {
-        return new JMadModelPackageRepository(CERN_GITLAB, groupName, GITLAB_GROUP_API_V4);
+        return JMadModelPackageRepository.fromUri(CERN_GITLAB + groupName);
     }
 
 }

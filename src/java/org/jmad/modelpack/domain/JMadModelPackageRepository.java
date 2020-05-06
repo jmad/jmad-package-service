@@ -4,80 +4,64 @@
 
 package org.jmad.modelpack.domain;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
+
 public class JMadModelPackageRepository {
 
-    private final String baseUrl;
-    private final String repoName;
-    private final String connectorId;
+    private final URI repositoryUri;
 
-    public JMadModelPackageRepository(String baseUrl, String repoName, String connectorId) {
-        this.baseUrl = baseUrl;
-        this.repoName = repoName;
-        this.connectorId = connectorId;
+    private JMadModelPackageRepository(URI uri) {
+        this.repositoryUri = requireNonNull(uri, "URI must not be null");
     }
 
-    public String baseUrl() {
-        return baseUrl;
+    public static JMadModelPackageRepository fromUri(URI uri) {
+        return new JMadModelPackageRepository(normalizedUri(uri.toASCIIString()));
     }
 
-    public String repoName() {
-        return repoName;
+    public static JMadModelPackageRepository fromUri(String uri) {
+        return new JMadModelPackageRepository(normalizedUri(uri));
     }
 
-    public String connectorId() {
-        return connectorId;
+    private static URI normalizedUri(String uriString) {
+        try {
+            URI uri = new URI(uriString).normalize();
+            if (uri.getPath() == null || uri.getPath().isEmpty() || uri.getPath().endsWith("/")) {
+                return uri;
+            }
+            return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath() + "/",
+                    uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public URI uri() {
+        return repositoryUri;
+    }
+
+    public String connectorScheme() {
+        return repositoryUri.getScheme();
     }
 
     @Override
     public String toString() {
-        return "JMadModelPackageRepository [baseUrl=" + baseUrl + ", repoName=" + repoName + ", connectorId=" + connectorId
-                + "]";
+        return repositoryUri.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JMadModelPackageRepository that = (JMadModelPackageRepository) o;
+        return Objects.equals(repositoryUri, that.repositoryUri);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((baseUrl == null) ? 0 : baseUrl.hashCode());
-        result = prime * result + ((connectorId == null) ? 0 : connectorId.hashCode());
-        result = prime * result + ((repoName == null) ? 0 : repoName.hashCode());
-        return result;
+        return Objects.hash(repositoryUri);
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        JMadModelPackageRepository other = (JMadModelPackageRepository) obj;
-        if (baseUrl == null) {
-            if (other.baseUrl != null) {
-                return false;
-            }
-        } else if (!baseUrl.equals(other.baseUrl)) {
-            return false;
-        }
-        if (connectorId == null) {
-            if (other.connectorId != null) {
-                return false;
-            }
-        } else if (!connectorId.equals(other.connectorId)) {
-            return false;
-        }
-        if (repoName == null) {
-            if (other.repoName != null) {
-                return false;
-            }
-        } else if (!repoName.equals(other.repoName)) {
-            return false;
-        }
-        return true;
-    }
-
 }

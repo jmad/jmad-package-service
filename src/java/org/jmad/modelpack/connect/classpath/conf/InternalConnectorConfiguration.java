@@ -2,9 +2,9 @@
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
  */
 
-package org.jmad.modelpack.connect.embedded.conf;
+package org.jmad.modelpack.connect.classpath.conf;
 
-import org.jmad.modelpack.connect.embedded.InternalModelPackageConnectorImpl;
+import org.jmad.modelpack.connect.classpath.ClasspathModelPackageConnector;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class InternalConnectorConfiguration {
 
     @Bean
-    public InternalModelPackageConnectorImpl internalModelPackageConnector() {
-        return new InternalModelPackageConnectorImpl();
+    public ClasspathModelPackageConnector internalModelPackageConnector() {
+        return new ClasspathModelPackageConnector();
     }
 
 }
