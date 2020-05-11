@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import cern.accsoft.steering.jmad.domain.machine.RangeDefinition;
 import cern.accsoft.steering.jmad.domain.machine.SequenceDefinition;
+import cern.accsoft.steering.jmad.model.JMadModel;
 import cern.accsoft.steering.jmad.model.JMadModelStartupConfiguration;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
 import cern.accsoft.steering.jmad.modeldefs.domain.OpticsDefinition;
@@ -29,6 +30,16 @@ public final class ModelUris {
 
     private ModelUris() {
         throw new UnsupportedOperationException("static only");
+    }
+
+    public static URI modelUri(JMadModel model) {
+        RangeDefinition rangeDefinition = model.getActiveRangeDefinition();
+        OpticsDefinition opticsDefinition = model.getActiveOpticsDefinition();
+        JMadModelStartupConfiguration startupConfiguration = new JMadModelStartupConfiguration();
+        startupConfiguration.setLoadDefaultRange(false);
+        startupConfiguration.setInitialOpticsDefinition(opticsDefinition);
+        startupConfiguration.setInitialRangeDefinition(rangeDefinition);
+        return modelDefinitionUri(model.getModelDefinition(), startupConfiguration);
     }
 
     public static URI modelDefinitionUri(JMadModelDefinition modelDefinition,
