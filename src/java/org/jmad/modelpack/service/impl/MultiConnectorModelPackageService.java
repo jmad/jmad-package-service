@@ -6,6 +6,8 @@ package org.jmad.modelpack.service.impl;
 
 import static java.util.stream.Collectors.toList;
 import static org.jmad.modelpack.service.JMadModelPackageService.Mode.ONLINE;
+import static org.jmad.modelpack.util.ModelUris.findModelDefinitionFromUri;
+import static org.jmad.modelpack.util.ModelUris.startupConfigurationFromUri;
 
 import java.io.File;
 import java.net.URI;
@@ -15,6 +17,9 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 
+import cern.accsoft.steering.jmad.factory.JMadModelFactory;
+import cern.accsoft.steering.jmad.model.JMadModel;
+import cern.accsoft.steering.jmad.model.JMadModelStartupConfiguration;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinitionImpl;
 import org.jmad.modelpack.cache.ModelPackageFileCache;
 import org.jmad.modelpack.connect.DirectModelPackageConnector;
@@ -72,10 +77,17 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     }
 
     @Override
+    public Mono<JMadModel> createModelFromUri(URI uri) {
+        return packageFromUri(uri).flatMapMany(this::modelDefinitionsFrom).collectList().map(modelPackList -> {
+            JMadModelDefinition modelDefinition = findModelDefinitionFromUri(uri, modelPackList);
+            JMadModelStartupConfiguration startupConfiguration = startupConfigurationFromUri(uri, modelDefinition);
+            return jMadService.createModel(modelDefinition, startupConfiguration);
+        });
+    }
+
+    @Override
     public Mono<ModelPackageVariant> packageFromUri(URI uri) {
-        return connectors.stream()
-                .filter(c -> c.canHandle(uri))
-                .findFirst()
+        return connectors.stream().filter(c -> c.canHandle(uri)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No connector can handle URI " + uri))
                 .packageFromUri(uri);
     }
@@ -102,10 +114,8 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
 
     private Flux<JMadModelDefinition> definitionsFromDirect(ModelPackageVariant modelPackage) {
         List<Flux<JMadModelDefinition>> directStreams = connectors.stream()
-                .filter(c -> c instanceof DirectModelPackageConnector)
-                .map(c -> (DirectModelPackageConnector) c)
-                .map(c -> c.modelDefinitionsFor(modelPackage))
-                .collect(toList());
+                .filter(c -> c instanceof DirectModelPackageConnector).map(c -> (DirectModelPackageConnector) c)
+                .map(c -> c.modelDefinitionsFor(modelPackage)).collect(toList());
 
         return Flux.merge(directStreams);
     }
@@ -119,20 +129,17 @@ public class MultiConnectorModelPackageService implements JMadModelPackageServic
     }
 
     private Mono<Resource> zipResourceFrom(ModelPackageVariant modelPackage) {
-        List<Mono<Resource>> connectorStreams = connectors.stream()
-                .filter(c -> c instanceof ZipModelPackageConnector)
-                .map(c -> (ZipModelPackageConnector) c)
-                .map(c -> c.zipResourceFor(modelPackage))
-                .collect(toList());
+        List<Mono<Resource>> connectorStreams = connectors.stream().filter(c -> c instanceof ZipModelPackageConnector)
+                .map(c -> (ZipModelPackageConnector) c).map(c -> c.zipResourceFor(modelPackage)).collect(toList());
 
         return Mono.first(connectorStreams);
     }
 
     private Flux<ModelPackageVariant> packagesFrom(JMadModelPackageRepository repo) {
-        List<Flux<ModelPackageVariant>> connectorStreams = connectors.stream()
-                .filter(c -> c.canHandle(repo))
+        List<Flux<ModelPackageVariant>> connectorStreams = connectors.stream().filter(c -> c.canHandle(repo))
                 .map(c -> c.availablePackages(repo).onErrorResume(t -> {
-                    LOGGER.warn("Error while retrieving packages from repo {} from connector {}. Returning empty.", repo, c, t);
+                    LOGGER.warn("Error while retrieving packages from repo {} from connector {}. Returning empty.",
+                            repo, c, t);
                     return Flux.empty();
                 })).collect(toList());
 

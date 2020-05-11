@@ -1,5 +1,6 @@
 package org.jmad.modelpack.service;
 
+import cern.accsoft.steering.jmad.model.JMadModel;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
@@ -20,6 +21,8 @@ import java.net.URI;
  * @author kfuchsbe
  */
 public interface JMadModelPackageService {
+
+    Mono<JMadModel> createModelFromUri(URI uri);
 
     Mono<ModelPackageVariant> packageFromUri(URI uri);
 

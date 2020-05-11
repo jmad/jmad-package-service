@@ -99,7 +99,7 @@ public final class VersionStrings {
      * 
      * @return a comparator following the described behaviour.
      */
-    public static final Comparator<String> versionComparator() {
+    public static Comparator<String> versionComparator() {
         return NULLS_FIRST_VERSION_COMPARATOR;
     }
 
