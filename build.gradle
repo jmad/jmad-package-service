@@ -3,7 +3,7 @@ buildscript {
     project.ext.DEPLOYMENT = System.getProperty('deployment') ?: false
     project.ext.VCS_TAG = System.getProperty('TRAVIS_TAG') ?: System.getenv('TRAVIS_TAG')
     project.ext.POM = [
-        groupId    : 'jmad',
+        groupId    : 'io.jmad',
         artifactId : 'jmad-modelpack-service',
         description: 'Service to retrieve JMad model packages from different sources.'
     ]
