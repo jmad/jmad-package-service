@@ -96,7 +96,10 @@ dependencies {
     testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.1'
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '4.7' }
+wrapper {
+    gradleVersion = '5.4.1'
+    distributionUrl = distributionUrl.replace("bin", "all")
+}
 
 sourceSets {
     main {
