@@ -25,17 +25,15 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cern.accsoft.steering.jmad.util.StreamUtil;
+import cern.accsoft.steering.jmad.util.TempFileUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jmad.modelpack.cache.ModelPackageFileCache;
 import org.jmad.modelpack.domain.ModelPackageVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import cern.accsoft.steering.jmad.util.StreamUtil;
-import cern.accsoft.steering.jmad.util.TempFileUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -55,7 +53,7 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
      * <p>
      * ... Concurrency issues within different processes is another story and is not yet addressed.
      */
-    private Map<ModelPackageVariant, File> packageFiles = new HashMap<>();
+    private final Map<ModelPackageVariant, File> packageFiles = new HashMap<>();
 
     public ModelPackageFileCacheImpl(TempFileUtil tempFileUtil) {
         requireNonNull(tempFileUtil, "tempFileUtil must not be null");
@@ -107,7 +105,7 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
         }
     }
 
-    File packageFile(ModelPackageVariant packageVariant) {
+    private File packageFile(ModelPackageVariant packageVariant) {
         synchronized (packageFiles) {
             File file = packageFiles.get(packageVariant);
             if (file != null) {
@@ -123,7 +121,7 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
         return new File(cacheDir, zipFileName(packageVariant));
     }
 
-    private static final String zipFileName(ModelPackageVariant packageVariant) {
+    private static String zipFileName(ModelPackageVariant packageVariant) {
         return packageVariant.fullName() + ZIP_FILE_EXTENSION;
     }
 
@@ -136,19 +134,17 @@ public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
         return Mono.fromRunnable(() -> {
             synchronized (packageFiles) {
                 Set<ModelPackageVariant> deletedKeys = new HashSet<>();
-                packageFiles.entrySet().forEach(e -> {
-                    File file = e.getValue();
-
-                    synchronized (file) {
-                        if (deleteCacheEntry(file)) {
-                            deletedKeys.add(e.getKey());
-                        }
+                packageFiles.forEach((key, file) -> {
+                    if (deleteCacheEntry(file)) {
+                        deletedKeys.add(key);
                     }
                 });
-                deletedKeys.stream().forEach(packageFiles::remove);
+                deletedKeys.forEach(packageFiles::remove);
 
                 /* Also try to remove the rest of the files, even if they were not in the map */
-                cachedZipFiles().stream().forEach(this::deleteCacheEntry);
+                cachedZipFiles().forEach(this::deleteCacheEntry);
+
+                LOGGER.info("Caches cleared !");
             }
         });
     }

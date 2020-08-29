@@ -1,13 +1,12 @@
 package org.jmad.modelpack.service;
 
-import cern.accsoft.steering.jmad.model.JMadModel;
-import org.jmad.modelpack.domain.ModelPackageVariant;
+import java.net.URI;
 
+import cern.accsoft.steering.jmad.model.JMadModel;
 import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import org.jmad.modelpack.domain.ModelPackageVariant;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
 
 /**
  * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
@@ -32,11 +31,11 @@ public interface JMadModelPackageService {
 
     Mono<Void> clearCache();
 
-    public Mode mode();
+    Mode mode();
 
-    public void setMode(Mode mode);
+    void setMode(Mode mode);
 
-    public enum Mode {
+    enum Mode {
         ONLINE,
         OFFLINE;
     }
