@@ -4,6 +4,9 @@
 
 package org.jmad.modelpack.connect.gitlab;
 
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTPS_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTP_SCHEME;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -32,13 +35,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
-
-import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTPS_SCHEME;
-import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTP_SCHEME;
 
 public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {
 
@@ -160,7 +159,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     private Flux<GitlabVariant> branchesFor(JMadModelPackageRepository repository, String id) {
-        String uri = repositoryUri(repository, id) + "/branches";
+        String uri = repositoryUri(repository, id) + "/branches?per_page=100";
 
         // @formatter:off
         return flux(uri, GitlabBranch[].class)
@@ -169,7 +168,7 @@ public class GitlabGroupModelPackageConnector implements ZipModelPackageConnecto
     }
 
     private Flux<GitlabVariant> tagsFor(JMadModelPackageRepository repository, String id) {
-        String uri = repositoryUri(repository, id) + "/tags";
+        String uri = repositoryUri(repository, id) + "/tags?per_page=100";
 
         // @formatter:off
         return flux(uri, GitlabTag[].class)
