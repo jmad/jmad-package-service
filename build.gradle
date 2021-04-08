@@ -68,7 +68,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'io.jmad', name: 'jmad-core', version: '0.7.0'
+    compile group: 'io.jmad', name: 'jmad-core', version: '0.7.3'
 
     compile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 
