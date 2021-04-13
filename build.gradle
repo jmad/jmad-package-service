@@ -25,6 +25,8 @@ apply plugin: 'eclipse'
 
 group = project['POM.groupId']
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+
 repositories {
     if (CERN_VM) {
         maven { url 'http://artifactory.cern.ch/ds-jcenter' }
