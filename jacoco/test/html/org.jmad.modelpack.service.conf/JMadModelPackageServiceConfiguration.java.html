@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JMadModelPackageServiceConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.service.conf</a> &gt; <span class="el_source">JMadModelPackageServiceConfiguration.java</span></div><h1>JMadModelPackageServiceConfiguration.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.service.conf;
+
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabOld;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabPro;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
+import static org.jmad.modelpack.domain.JMadModelRepositories.defaultLocalFileRepository;
+import static org.jmad.modelpack.domain.JMadModelRepositories.internal;
+
+import cern.accsoft.steering.jmad.service.JMadService;
+import cern.accsoft.steering.jmad.util.JMadPreferences;
+import cern.accsoft.steering.jmad.util.TempFileUtilImpl;
+import org.jmad.modelpack.cache.ModelPackageFileCache;
+import org.jmad.modelpack.cache.impl.ModelPackageFileCacheImpl;
+import org.jmad.modelpack.connect.classpath.conf.InternalConnectorConfiguration;
+import org.jmad.modelpack.connect.gitlab.conf.GitlabConnectorConfiguration;
+import org.jmad.modelpack.connect.localfile.conf.LocalFileConnectorConfiguration;
+import org.jmad.modelpack.service.JMadModelPackageService;
+import org.jmad.modelpack.service.impl.ConcurrentModelPackageRepositoryManager;
+import org.jmad.modelpack.service.impl.MultiConnectorModelPackageService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+/**
+ * Spring configuration that only creates the beans for the jmad-modelpack-service. It expects all the necessary beans
+ * already in the context. You can use the {@link JMadModelPackageServiceStandaloneConfiguration} if you want to
+ * have a fully configured, ready-to-use, context.
+ */
+@Import({GitlabConnectorConfiguration.class,
+        InternalConnectorConfiguration.class,
+        LocalFileConnectorConfiguration.class})
+<span class="nc" id="L35">public class JMadModelPackageServiceConfiguration {</span>
+
+    @Bean
+    public ModelPackageFileCache modelPackageFileCache(JMadService jMadService) {
+<span class="nc" id="L39">        JMadPreferences preferences = jMadService.getPreferences();</span>
+<span class="nc" id="L40">        TempFileUtilImpl tempFileUtil = new TempFileUtilImpl();</span>
+<span class="nc" id="L41">        tempFileUtil.setPreferences(preferences);</span>
+<span class="nc" id="L42">        tempFileUtil.init();</span>
+<span class="nc" id="L43">        return new ModelPackageFileCacheImpl(tempFileUtil);</span>
+    }
+
+    @Bean
+    public ConcurrentModelPackageRepositoryManager packageRepositoryManager() {
+<span class="nc" id="L48">        ConcurrentModelPackageRepositoryManager manager = new ConcurrentModelPackageRepositoryManager();</span>
+<span class="nc" id="L49">        manager.enable(cernGitlabPro());</span>
+<span class="nc" id="L50">        manager.enable(internal());</span>
+<span class="nc" id="L51">        defaultLocalFileRepository().ifPresent(manager::enable);</span>
+<span class="nc" id="L52">        manager.disable(cernGitlabOld());</span>
+<span class="nc" id="L53">        manager.disable(cernGitlabTesting());</span>
+<span class="nc" id="L54">        return manager;</span>
+    }
+
+    @Bean(&quot;jmadModelPackageService&quot;)
+    public JMadModelPackageService jmadModelPackageService() {
+<span class="nc" id="L59">        return new MultiConnectorModelPackageService();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

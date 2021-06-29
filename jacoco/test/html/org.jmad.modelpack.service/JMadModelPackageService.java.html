@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JMadModelPackageService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.service</a> &gt; <span class="el_source">JMadModelPackageService.java</span></div><h1>JMadModelPackageService.java</h1><pre class="source lang-java linenums">package org.jmad.modelpack.service;
+
+import java.net.URI;
+
+import cern.accsoft.steering.jmad.model.JMadModel;
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+/**
+ * This is the top interface to retrieve jmad model packages and to get available model definitions from them. It is
+ * designed using reactive concepts, to acknowledge the fact that packages might be remotely queried and thus are better
+ * handled in an asynchronous way.
+ * 
+ * @author kfuchsbe
+ */
+public interface JMadModelPackageService {
+
+    Mono&lt;JMadModel&gt; createModelFromUri(URI uri);
+
+    Mono&lt;ModelPackageVariant&gt; packageFromUri(URI uri);
+
+    Flux&lt;ModelPackageVariant&gt; availablePackages();
+
+    Flux&lt;JMadModelDefinition&gt; modelDefinitionsFrom(ModelPackageVariant modelPackage);
+
+    Mono&lt;Void&gt; clearCache();
+
+    Mode mode();
+
+    void setMode(Mode mode);
+
+<span class="nc" id="L38">    enum Mode {</span>
+<span class="nc" id="L39">        ONLINE,</span>
+<span class="nc" id="L40">        OFFLINE;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

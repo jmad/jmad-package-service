@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClasspathModelPackageConnector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.connect.classpath</a> &gt; <span class="el_source">ClasspathModelPackageConnector.java</span></div><h1>ClasspathModelPackageConnector.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.connect.classpath;
+
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import cern.accsoft.steering.jmad.service.JMadService;
+import org.jmad.modelpack.connect.DirectModelPackageConnector;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackage;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
+import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.Set;
+
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.INTERNAL_SCHEME;
+
+<span class="nc" id="L25">public class ClasspathModelPackageConnector implements DirectModelPackageConnector {</span>
+    private static final String INTERNAL = &quot;INTERNAL&quot;;
+<span class="nc" id="L27">    private static final Variant INTERNAL_VARIANT = new Variant(INTERNAL, VariantType.RELEASE);</span>
+<span class="nc" id="L28">    public static final URI INTERNAL_URI = URI.create(INTERNAL_SCHEME + &quot;:/&quot;);</span>
+<span class="nc" id="L29">    public static final ModelPackage INTERNAL_MODEL_PACKAGE = new ModelPackage(INTERNAL,</span>
+<span class="nc" id="L30">            JMadModelPackageRepository.fromUri(INTERNAL_URI), INTERNAL_URI);</span>
+<span class="nc" id="L31">    private static final ModelPackageVariant INTERNAL_MODEL_PACKAGE_VARIANT = new ModelPackageVariant(INTERNAL_URI,</span>
+            INTERNAL_MODEL_PACKAGE, INTERNAL_VARIANT);
+
+    @Autowired
+    private JMadService jmadService;
+
+    @Override
+    public Flux&lt;ModelPackageVariant&gt; availablePackages(JMadModelPackageRepository repository) {
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (canHandle(repository)) {</span>
+<span class="nc" id="L40">            return Flux.just(INTERNAL_MODEL_PACKAGE_VARIANT);</span>
+        } else {
+<span class="nc" id="L42">            return Flux.empty();</span>
+        }
+    }
+
+    @Override
+    public Mono&lt;ModelPackageVariant&gt; packageFromUri(URI uri) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (canHandle(uri)) {</span>
+<span class="nc" id="L49">            return Mono.just(INTERNAL_MODEL_PACKAGE_VARIANT);</span>
+        } else {
+<span class="nc" id="L51">            return Mono.empty();</span>
+        }
+    }
+
+    @Override
+    public Flux&lt;JMadModelDefinition&gt; modelDefinitionsFor(ModelPackageVariant modelPackage) {
+<span class="nc bnc" id="L57" title="All 4 branches missed.">        if (modelPackage.variant() != INTERNAL_VARIANT || !canHandle(modelPackage.modelPackage().repository())) {</span>
+<span class="nc" id="L58">            return Flux.empty();</span>
+        }
+<span class="nc" id="L60">        return Flux.fromIterable(jmadService.getModelDefinitionManager().getAllModelDefinitions());</span>
+    }
+
+    @Override
+    public Set&lt;String&gt; handledSchemes() {
+<span class="nc" id="L65">        return Collections.singleton(INTERNAL_SCHEME);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

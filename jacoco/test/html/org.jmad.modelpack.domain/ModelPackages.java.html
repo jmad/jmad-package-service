@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModelPackages.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.domain</a> &gt; <span class="el_source">ModelPackages.java</span></div><h1>ModelPackages.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.domain;
+
+import java.util.Comparator;
+import java.util.Objects;
+
+import org.jmad.modelpack.util.VersionStrings;
+
+/**
+ * Utility methods for jmad model packages
+ * 
+ * @author kfuchsbe
+ */
+public final class ModelPackages {
+
+<span class="fc" id="L19">    private static final Comparator&lt;Variant&gt; LATEST_RELEASE_LAST_COMPARATOR = (Variant v1, Variant v2) -&gt; {</span>
+
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if (Objects.equals(v1, v2)) {</span>
+<span class="fc" id="L22">            return 0;</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        } else if (Objects.isNull(v1)) {</span>
+<span class="fc" id="L24">            return -1;</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        } else if (Objects.isNull(v2)) {</span>
+<span class="fc" id="L26">            return 1;</span>
+        }
+
+<span class="fc" id="L29">        int variantTypeOrder = v1.type().ordinal() - v2.type().ordinal();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (variantTypeOrder != 0) {</span>
+<span class="fc" id="L31">            return variantTypeOrder;</span>
+        }
+
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (isRelease(v1)) {</span>
+<span class="fc" id="L35">            return VersionStrings.versionComparator().compare(v1.name(), v2.name());</span>
+        } else {
+<span class="fc" id="L37">            return v1.name().compareToIgnoreCase(v2.name());</span>
+        }
+    };
+
+<span class="fc" id="L41">    private static final Comparator&lt;Variant&gt; LATEST_FIRST_VARIANT_COMPARATOR = LATEST_RELEASE_LAST_COMPARATOR</span>
+<span class="fc" id="L42">            .reversed();</span>
+
+<span class="fc" id="L44">    private static final Comparator&lt;ModelPackageVariant&gt; PACKAGE_VARIANT_COMPARATOR = Comparator</span>
+<span class="fc" id="L45">            .&lt;ModelPackageVariant, String&gt; comparing(ti -&gt; ti.modelPackage().name())</span>
+<span class="fc" id="L46">            .thenComparing(ModelPackageVariant::variant, LATEST_FIRST_VARIANT_COMPARATOR);</span>
+
+    private ModelPackages() {
+        /* Only static methods */
+    }
+
+    public static Comparator&lt;ModelPackageVariant&gt; latestFirstPackageVariantComparator() {
+<span class="fc" id="L53">        return PACKAGE_VARIANT_COMPARATOR;</span>
+    }
+
+    /**
+     * Provides a comparator for {@link Variant}s that sorts according the following:
+     * &lt;ol&gt;
+     * &lt;li&gt;{@code null} elements&lt;/li&gt;
+     * &lt;li&gt;branches, internally sorted alphabetically by name, ignoring case&lt;/li&gt;
+     * &lt;li&gt;tags, internally sorted alphabetically by name, ignoring case&lt;/li&gt;
+     * &lt;li&gt;releases sorted by version numbers, according to {@link VersionStrings#versionComparator()}&lt;/li&gt;
+     * &lt;/ol&gt;
+     * 
+     * @return a comparator following the
+     */
+    public static Comparator&lt;Variant&gt; latestLastVariantComparator() {
+<span class="fc" id="L68">        return LATEST_RELEASE_LAST_COMPARATOR;</span>
+    }
+
+    private static boolean isRelease(Variant v1) {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        return VariantType.RELEASE == v1.type();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

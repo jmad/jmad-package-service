@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VersionStrings.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.util</a> &gt; <span class="el_source">VersionStrings.java</span></div><h1>VersionStrings.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.util;
+
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import com.google.common.annotations.VisibleForTesting;
+
+/**
+ * Contains utility methods which can be used to treat strings that represent versions.
+ * 
+ * @author kfuchsbe
+ */
+public final class VersionStrings {
+
+    private static final String VERSION_PREFIX = &quot;v&quot;;
+<span class="fc" id="L26">    private static final Comparator&lt;String&gt; NULLS_FIRST_VERSION_COMPARATOR = (String v1, String v2) -&gt; {</span>
+
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (Objects.equals(v1, v2)) {</span>
+<span class="fc" id="L29">            return 0;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        } else if (Objects.isNull(v1)) {</span>
+<span class="fc" id="L31">            return -1;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        } else if (Objects.isNull(v2)) {</span>
+<span class="fc" id="L33">            return 1;</span>
+        }
+
+<span class="fc" id="L36">        List&lt;Integer&gt; v1digits = versionDigits(v1);</span>
+<span class="fc" id="L37">        List&lt;Integer&gt; v2digits = versionDigits(v2);</span>
+
+<span class="fc bfc" id="L39" title="All 4 branches covered.">        if (v1digits.isEmpty() &amp;&amp; v2digits.isEmpty()) {</span>
+<span class="fc" id="L40">            return v1.compareToIgnoreCase(v2);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        } else if (v1digits.isEmpty()) {</span>
+<span class="fc" id="L42">            return -1;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        } else if (v2digits.isEmpty()) {</span>
+<span class="fc" id="L44">            return 1;</span>
+        }
+
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        if (!hasVersionPrefix(v1) &amp;&amp; hasVersionPrefix(v2)) {</span>
+<span class="fc" id="L48">            return -1;</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        } else if (hasVersionPrefix(v1) &amp;&amp; (!hasVersionPrefix(v2))) {</span>
+<span class="fc" id="L50">            return 1;</span>
+        }
+
+<span class="fc" id="L53">        int smallestSize = Math.min(v1digits.size(), v2digits.size());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        for (int i = 0; i &lt; smallestSize; i++) {</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (v1digits.get(i) &lt; v2digits.get(i)) {</span>
+<span class="fc" id="L56">                return -1;</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            } else if (v1digits.get(i) &gt; v2digits.get(i)) {</span>
+<span class="fc" id="L58">                return 1;</span>
+            }
+        }
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (v2digits.size() &gt; smallestSize) {</span>
+<span class="fc" id="L63">            return -1;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        } else if (v1digits.size() &gt; smallestSize) {</span>
+<span class="fc" id="L65">            return 1;</span>
+        }
+
+<span class="fc" id="L68">        return v1.compareToIgnoreCase(v2);</span>
+    };
+
+   
+    private static boolean hasVersionPrefix(String v1) {
+<span class="fc" id="L73">        return v1.trim().startsWith(VERSION_PREFIX);</span>
+    }
+
+    private VersionStrings() {
+        /* only static methods */
+    }
+
+    /**
+     * Returns a comparator to be used for strings that represent software versions. The following format is
+     * recommended: 'v10.2.1', whereas the number of digits can vary. The 'v' in the beginning is optional, but
+     * recommended. However a version of e.g. 'v1.1' is not considered the same as a version of '1.1'. There must be no
+     * space between the 'v' and the first digit. Leading or trailing spaces are ignored, also in between dots. However,
+     * spaces anywhere in a version string are strongly discouraged.
+     * &lt;p&gt;
+     * If used for sorting, then the final order will follow the following rules:
+     * &lt;ol&gt;
+     * &lt;li&gt;{@code null} values&lt;/li&gt;
+     * &lt;li&gt;unparsable version numbers (e.g. containing other letters than a leading 'v' or no digits). These are sorted
+     * internally by string natural order.&lt;/li&gt;
+     * &lt;li&gt;version numbers without a leading 'v' before version numbers with a leading 'v'. Both sorted internally
+     * ascending from the most significant digit (left) to the least significant. If different numbers of digits are
+     * used, the one with less digits are considered as missing digits at the end and ar considered as less then those
+     * with digits at the end. For example, the versions 'v1.2', 'v1.1.0', 'v1.1' would be sorted as: [ 'v1.1',
+     * 'v1.1.0', 'v1.2']. If the different strings result in the same numerical versions (e.g. 'v1.1' and ' v1.1', then
+     * again natural string ordering is used.&lt;/li&gt;
+     * &lt;/ol&gt;
+     * 
+     * @return a comparator following the described behaviour.
+     */
+    public static Comparator&lt;String&gt; versionComparator() {
+<span class="fc" id="L103">        return NULLS_FIRST_VERSION_COMPARATOR;</span>
+    }
+
+    /**
+     * Considers strings as version strings and splits them into their digits. The first entry in the list will be the
+     * most significant digit, the next one the one less significant digit. Whenever any digit cannot be parsed (the
+     * string is invalid), then an empty list is returned. The only letter which is allowed in the input string is a
+     * leading {@value #VERSION_PREFIX}. If this is present, it will be ignored by this method. Whitespaces are ignored.
+     * 
+     * @param versionString the string to be transformed into integer digits
+     * @return a list, containing the digits (most significant first), or an empty list, if the given string does not
+     *         represent a valid version.
+     * @throws NullPointerException in case the given string is {@code null}
+     */
+    @VisibleForTesting
+    static List&lt;Integer&gt; versionDigits(String versionString) {
+<span class="fc" id="L119">        requireNonNull(versionString, &quot;versionString must not be null&quot;);</span>
+
+<span class="fc" id="L121">        String trimmed = versionString.trim();</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (hasVersionPrefix(trimmed)) {</span>
+<span class="fc" id="L123">            trimmed = trimmed.substring(VERSION_PREFIX.length());</span>
+        }
+        try {
+<span class="fc" id="L126">            return Stream.of(trimmed.split(&quot;\\.&quot;)).map(String::trim).map(Integer::parseInt).collect(toList());</span>
+<span class="fc" id="L127">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L128">            return Collections.emptyList();</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

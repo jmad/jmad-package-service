@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GitlabGroupModelPackageConnector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.connect.gitlab</a> &gt; <span class="el_source">GitlabGroupModelPackageConnector.java</span></div><h1>GitlabGroupModelPackageConnector.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.connect.gitlab;
+
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTPS_SCHEME;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.GITLAB_HTTP_SCHEME;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
+
+import com.google.common.collect.ImmutableSet;
+import org.jmad.modelpack.connect.ZipModelPackageConnector;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabModelPackage;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabModelPackageVariant;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabVariant;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabBranch;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabProject;
+import org.jmad.modelpack.connect.gitlab.internals.GitlabTag;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.ModelPackages;
+import org.jmad.modelpack.domain.Variant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.ReplayProcessor;
+
+<span class="fc" id="L42">public class GitlabGroupModelPackageConnector implements ZipModelPackageConnector {</span>
+
+<span class="fc" id="L44">    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupModelPackageConnector.class);</span>
+    private static final String JMAD_IGNORE_TAG = &quot;jmad-ignore&quot;;
+
+<span class="fc" id="L47">    private ExecutorService runner = Executors.newCachedThreadPool();</span>
+
+<span class="fc" id="L49">    private RestTemplate restTemplate = new RestTemplate();</span>
+
+    @Override
+    public Flux&lt;ModelPackageVariant&gt; availablePackages(JMadModelPackageRepository repository) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (!canHandle(repository)) {</span>
+<span class="nc" id="L54">            return Flux.empty();</span>
+        }
+<span class="fc" id="L56">        String uri = baseUrlOf(repository) + &quot;/api/v4/groups/&quot; + gitlabGroupNameOf(repository) + &quot;/projects&quot;;</span>
+<span class="fc" id="L57">        LOGGER.info(&quot;Querying model packages from '{}'.&quot;, uri);</span>
+
+        // @formatter:off
+<span class="fc" id="L60">        return flux(uri,GitlabProject[].class)</span>
+<span class="fc" id="L61">                .filter(GitlabGroupModelPackageConnector::filterOutIgnoredRepos)</span>
+<span class="fc" id="L62">                .flatMap(p -&gt; variantsFor(repository, p).map(v -&gt; modelPackageVariant(repository, p, v)));</span>
+        // @formatter:on
+    }
+
+    @Override
+    public Mono&lt;ModelPackageVariant&gt; packageFromUri(URI rawUri) {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if (!canHandle(rawUri)) {</span>
+<span class="nc" id="L69">            return Mono.empty();</span>
+        }
+<span class="fc" id="L71">        URI uri = rawUri.normalize();</span>
+<span class="fc" id="L72">        String uriPath = uri.getRawPath();</span>
+<span class="fc" id="L73">        int firstSlash = uriPath.indexOf(&quot;/&quot;, 1);</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (firstSlash == -1) {</span>
+<span class="nc" id="L75">            return Mono.error(new IllegalArgumentException(&quot;Malformed GitLab URI: &quot; + uri));</span>
+        }
+<span class="fc" id="L77">        String gitlabGroupPath = uriPath.substring(0, firstSlash + 1);</span>
+        JMadModelPackageRepository repository;
+        try {
+<span class="fc" id="L80">            repository = JMadModelPackageRepository.fromUri(new URI(uri.getScheme(), uri.getRawAuthority(),</span>
+                    gitlabGroupPath, null));
+<span class="nc" id="L82">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L83">            return Mono.error(e);</span>
+<span class="fc" id="L84">        }</span>
+<span class="fc" id="L85">        String modelPackPart = uriPath.substring(firstSlash + 1);</span>
+<span class="fc" id="L86">        int firstAt = modelPackPart.indexOf(&quot;@&quot;);</span>
+        String modelPackName;
+        Optional&lt;String&gt; modelPackVariant;
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (firstAt == -1) {</span>
+<span class="fc" id="L90">            modelPackName = modelPackPart;</span>
+<span class="fc" id="L91">            modelPackVariant = Optional.empty();</span>
+        } else {
+<span class="fc" id="L93">            modelPackName = modelPackPart.substring(0, firstAt);</span>
+<span class="fc" id="L94">            modelPackVariant = Optional.of(modelPackPart.substring(firstAt + 1));</span>
+        }
+<span class="fc" id="L96">        return availablePackages(repository)</span>
+<span class="fc" id="L97">                .filter(mpv -&gt; mpv.modelPackage().name().equals(modelPackName))</span>
+<span class="fc" id="L98">                .filter(mpv -&gt; modelPackVariant.map(mpv.variant().name()::equals).orElse(true))</span>
+<span class="fc" id="L99">                .sort(ModelPackages.latestFirstPackageVariantComparator())</span>
+<span class="fc" id="L100">                .next();</span>
+    }
+
+    public ModelPackageVariant modelPackageVariant(JMadModelPackageRepository repo,
+                                                   GitlabProject project, GitlabVariant variant) {
+<span class="fc" id="L105">        return new GitlabModelPackageVariant(new GitlabModelPackage(project, repo), variant);</span>
+    }
+
+    private static String baseUrlOf(JMadModelPackageRepository repository) {
+<span class="fc" id="L109">        URI uri = repository.uri();</span>
+<span class="fc" id="L110">        String protocol = uri.getScheme().replace(&quot;gitlab+&quot;, &quot;&quot;);</span>
+<span class="fc" id="L111">        String host = uri.getAuthority();</span>
+<span class="fc" id="L112">        return protocol + &quot;://&quot; + host;</span>
+    }
+
+    private static String gitlabGroupNameOf(JMadModelPackageRepository repository) {
+<span class="fc" id="L116">        String uriPath = repository.uri().getRawPath();</span>
+<span class="fc" id="L117">        int firstSlash = uriPath.indexOf(&quot;/&quot;, 1);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (firstSlash == -1) {</span>
+<span class="nc" id="L119">            return uriPath.substring(1);</span>
+        } else {
+<span class="fc" id="L121">            return uriPath.substring(1, firstSlash);</span>
+        }
+    }
+
+    @Override
+    public Mono&lt;Resource&gt; zipResourceFor(ModelPackageVariant modelPackageVariant) {
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (!(modelPackageVariant instanceof GitlabModelPackageVariant)) {</span>
+<span class="nc" id="L128">            return Mono.empty();</span>
+        }
+<span class="nc" id="L130">        GitlabModelPackageVariant pkgVariant = (GitlabModelPackageVariant) modelPackageVariant;</span>
+<span class="nc" id="L131">        GitlabModelPackage pkg = (GitlabModelPackage) pkgVariant.modelPackage();</span>
+
+<span class="nc" id="L133">        String uri = repositoryUri(pkg.repository(), pkg.id()) + &quot;/archive.zip&quot; + variantParam(pkgVariant.variant());</span>
+<span class="nc" id="L134">        LOGGER.info(&quot;Retrieving package from {}.&quot;, uri);</span>
+
+<span class="nc" id="L136">        return mono(() -&gt; {</span>
+<span class="nc" id="L137">            RequestEntity&lt;Void&gt; request = RequestEntity.get(URI.create(uri)).accept(MediaType.APPLICATION_OCTET_STREAM)</span>
+<span class="nc" id="L138">                    .build();</span>
+<span class="nc" id="L139">            ResponseEntity&lt;Resource&gt; r = restTemplate.exchange(request, Resource.class);</span>
+<span class="nc" id="L140">            return r.getBody();</span>
+        });
+
+    }
+
+    private static String variantParam(Variant variant) {
+<span class="nc" id="L146">        return &quot;?sha=&quot; + variant.name();</span>
+    }
+
+    public Flux&lt;GitlabVariant&gt; variantsFor(JMadModelPackageRepository repo, GitlabProject pkg) {
+<span class="fc" id="L150">        return Flux.merge(tagsFor(repo, pkg.id), branchesFor(repo, pkg.id));</span>
+    }
+
+    private static boolean filterOutIgnoredRepos(GitlabProject p) {
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (p.tag_list.contains(JMAD_IGNORE_TAG)) {</span>
+<span class="nc" id="L155">            LOGGER.info(&quot;Ignoring Gitlab project {} because of {} tag&quot;, p.name, JMAD_IGNORE_TAG);</span>
+<span class="nc" id="L156">            return false;</span>
+        }
+<span class="fc" id="L158">        return true;</span>
+    }
+
+    private Flux&lt;GitlabVariant&gt; branchesFor(JMadModelPackageRepository repository, String id) {
+<span class="fc" id="L162">        String uri = repositoryUri(repository, id) + &quot;/branches?per_page=100&quot;;</span>
+
+        // @formatter:off
+<span class="fc" id="L165">        return flux(uri, GitlabBranch[].class)</span>
+<span class="fc" id="L166">               .map(GitlabBranch::toBranch);</span>
+        // @formatter:on
+    }
+
+    private Flux&lt;GitlabVariant&gt; tagsFor(JMadModelPackageRepository repository, String id) {
+<span class="fc" id="L171">        String uri = repositoryUri(repository, id) + &quot;/tags?per_page=100&quot;;</span>
+
+        // @formatter:off
+<span class="fc" id="L174">        return flux(uri, GitlabTag[].class)</span>
+<span class="fc" id="L175">               .map(GitlabTag::toTag);</span>
+        // @formatter:on
+    }
+
+    private static String repositoryUri(JMadModelPackageRepository repository, String id) {
+<span class="fc" id="L180">        return baseUrlOf(repository) + &quot;/api/v4/projects/&quot; + id + &quot;/repository&quot;;</span>
+    }
+
+    @Override
+    public Set&lt;String&gt; handledSchemes() {
+<span class="fc" id="L185">        return ImmutableSet.of(GITLAB_HTTP_SCHEME, GITLAB_HTTPS_SCHEME);</span>
+    }
+
+    private &lt;T&gt; Mono&lt;T&gt; mono(Supplier&lt;T&gt; supplier) {
+<span class="fc" id="L189">        ReplayProcessor&lt;T&gt; subject = ReplayProcessor.create();</span>
+<span class="fc" id="L190">        runner.submit(() -&gt; {</span>
+            try {
+<span class="fc" id="L192">                subject.onNext(supplier.get());</span>
+<span class="fc" id="L193">                subject.onComplete();</span>
+<span class="nc" id="L194">            } catch (Exception e) {</span>
+<span class="nc" id="L195">                subject.onError(e);</span>
+<span class="fc" id="L196">            }</span>
+<span class="fc" id="L197">        });</span>
+<span class="fc" id="L198">        return Mono.fromDirect(subject);</span>
+    }
+
+    private &lt;T&gt; Flux&lt;T&gt; flux(String uri, Class&lt;T[]&gt; listClass) {
+<span class="fc" id="L202">        return mono(() -&gt; restTemplate.getForObject(uri, listClass)).flatMapIterable(Arrays::asList);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

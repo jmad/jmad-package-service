@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModelUris.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.util</a> &gt; <span class="el_source">ModelUris.java</span></div><h1>ModelUris.java</h1><pre class="source lang-java linenums">package org.jmad.modelpack.util;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import cern.accsoft.steering.jmad.domain.machine.RangeDefinition;
+import cern.accsoft.steering.jmad.domain.machine.SequenceDefinition;
+import cern.accsoft.steering.jmad.model.JMadModel;
+import cern.accsoft.steering.jmad.model.JMadModelStartupConfiguration;
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import cern.accsoft.steering.jmad.modeldefs.domain.OpticsDefinition;
+
+public final class ModelUris {
+
+    private static final String SEQUENCE_URI_PARAMETER = &quot;seq&quot;;
+    private static final String OPTIC_URI_PARAMETER = &quot;optic&quot;;
+
+<span class="nc" id="L31">    private ModelUris() {</span>
+<span class="nc" id="L32">        throw new UnsupportedOperationException(&quot;static only&quot;);</span>
+    }
+
+    public static URI modelUri(JMadModel model) {
+<span class="nc" id="L36">        RangeDefinition rangeDefinition = model.getActiveRangeDefinition();</span>
+<span class="nc" id="L37">        OpticsDefinition opticsDefinition = model.getActiveOpticsDefinition();</span>
+<span class="nc" id="L38">        JMadModelStartupConfiguration startupConfiguration = new JMadModelStartupConfiguration();</span>
+<span class="nc" id="L39">        startupConfiguration.setLoadDefaultRange(false);</span>
+<span class="nc" id="L40">        startupConfiguration.setInitialOpticsDefinition(opticsDefinition);</span>
+<span class="nc" id="L41">        startupConfiguration.setInitialRangeDefinition(rangeDefinition);</span>
+<span class="nc" id="L42">        return modelDefinitionUri(model.getModelDefinition(), startupConfiguration);</span>
+    }
+
+    public static URI modelDefinitionUri(JMadModelDefinition modelDefinition,
+            JMadModelStartupConfiguration startupConfiguration) {
+<span class="fc" id="L47">        requireNonNull(modelDefinition, &quot;model definition must not be null&quot;);</span>
+<span class="fc" id="L48">        String modelPackUri = modelDefinition.getModelPackUri();</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        checkState(modelPackUri != null,</span>
+<span class="fc" id="L50">                &quot;model pack URI of model definition [&quot; + modelDefinition.getName() + &quot;] is not set. &quot;</span>
+                        + &quot;Perhaps this model definition was not load from a model pack?&quot;);
+<span class="fc" id="L52">        URI baseUri = URI.create(modelPackUri);</span>
+<span class="fc" id="L53">        String localPart = buildUriLocalPart(modelDefinition.getName(), startupConfiguration);</span>
+        try {
+<span class="fc" id="L55">            return new URI(baseUri.getScheme(), baseUri.getAuthority(), baseUri.getPath(), baseUri.getQuery(),</span>
+                    localPart);
+<span class="nc" id="L57">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L58">            throw new IllegalStateException(&quot;Error building Model Pack URI&quot;, e);</span>
+        }
+    }
+
+    public static URI modelDefinitionUri(JMadModelDefinition modelDefinition) {
+<span class="fc" id="L63">        return modelDefinitionUri(modelDefinition, null);</span>
+    }
+
+    private static String buildUriLocalPart(String modelName, JMadModelStartupConfiguration startupConfiguration) {
+<span class="fc" id="L67">        String localPart = encodeUriComponent(modelName);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (startupConfiguration == null) {</span>
+<span class="fc" id="L69">            return localPart;</span>
+        }
+<span class="fc" id="L71">        RangeDefinition initialRangeDefinition = startupConfiguration.getInitialRangeDefinition();</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (initialRangeDefinition != null) {</span>
+<span class="fc" id="L73">            localPart += uriParameter(SEQUENCE_URI_PARAMETER) + encodeUriComponent(</span>
+<span class="fc" id="L74">                    initialRangeDefinition.getSequenceDefinition().getName());</span>
+        }
+<span class="fc" id="L76">        OpticsDefinition opticsDefinition = startupConfiguration.getInitialOpticsDefinition();</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (opticsDefinition != null) {</span>
+<span class="fc" id="L78">            localPart += uriParameter(OPTIC_URI_PARAMETER) + encodeUriComponent(opticsDefinition.getName());</span>
+        }
+
+<span class="fc" id="L81">        return localPart;</span>
+    }
+
+    private static String uriParameter(String parameterId) {
+<span class="fc" id="L85">        return &quot;&amp;&quot; + parameterId + &quot;=&quot;;</span>
+    }
+
+    public static JMadModelStartupConfiguration startupConfigurationFromUri(URI uri,
+            JMadModelDefinition modelDefinition) {
+<span class="fc" id="L90">        String localPart = uri.getFragment();</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        checkArgument(!isNullOrEmpty(localPart), &quot;No model information in URI&quot;);</span>
+<span class="fc" id="L92">        Map&lt;String, String&gt; attributes = Arrays.stream(localPart.split(&quot;&amp;&quot;)) //</span>
+<span class="fc" id="L93">                .map(ModelUris::decodeUriComponent) //</span>
+<span class="fc" id="L94">                .skip(1).map(s -&gt; s.split(&quot;=&quot;)) //</span>
+<span class="fc" id="L95">                .collect(toMap(s -&gt; s[0], s -&gt; s[1]));</span>
+<span class="fc" id="L96">        JMadModelStartupConfiguration startupConfiguration = new JMadModelStartupConfiguration();</span>
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (attributes.containsKey(SEQUENCE_URI_PARAMETER)) {</span>
+<span class="fc" id="L99">            startupConfiguration.setLoadDefaultRange(false);</span>
+<span class="fc" id="L100">            String sequenceName = attributes.get(SEQUENCE_URI_PARAMETER);</span>
+<span class="fc" id="L101">            SequenceDefinition sequenceDefinition = modelDefinition.getSequenceDefinition(sequenceName);</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (sequenceDefinition == null) {</span>
+<span class="fc" id="L103">                throw new NoSuchElementException(</span>
+<span class="fc" id="L104">                        &quot;No sequence '&quot; + sequenceName + &quot;' defined in model &quot; + modelDefinition.getName());</span>
+            }
+<span class="fc" id="L106">            startupConfiguration.setInitialRangeDefinition(sequenceDefinition.getDefaultRangeDefinition());</span>
+        }
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        if (attributes.containsKey(OPTIC_URI_PARAMETER)) {</span>
+<span class="fc" id="L110">            String opticName = attributes.get(OPTIC_URI_PARAMETER);</span>
+<span class="fc" id="L111">            OpticsDefinition opticsDefinition = modelDefinition.getOpticsDefinition(opticName);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            if (opticsDefinition == null) {</span>
+<span class="fc" id="L113">                throw new NoSuchElementException(</span>
+<span class="fc" id="L114">                        &quot;No optic '&quot; + opticName + &quot;' defined in model &quot; + modelDefinition.getName());</span>
+            }
+<span class="fc" id="L116">            startupConfiguration.setInitialOpticsDefinition(opticsDefinition);</span>
+        }
+
+<span class="fc" id="L119">        return startupConfiguration;</span>
+    }
+
+    public static JMadModelDefinition findModelDefinitionFromUri(URI uri, Collection&lt;JMadModelDefinition&gt; candidates) {
+<span class="fc" id="L123">        String localPart = uri.getFragment();</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        checkArgument(!isNullOrEmpty(localPart), &quot;No model information in URI&quot;);</span>
+<span class="fc" id="L125">        String modelName = decodeUriComponent(localPart.split(&quot;&amp;&quot;, 2)[0]);</span>
+<span class="fc" id="L126">        return candidates.stream().filter(mDef -&gt; mDef.getName().equalsIgnoreCase(modelName)).findFirst().orElseThrow(</span>
+<span class="fc" id="L127">                () -&gt; new NoSuchElementException(</span>
+                        &quot;No model definition found for '&quot; + modelName + &quot;' in model pack identified by &quot; + uri));
+    }
+
+    private static String encodeUriComponent(String string) {
+        try {
+<span class="fc" id="L133">            return URLEncoder.encode(string, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L134">        } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L135">            throw new IllegalStateException(e);</span>
+        }
+    }
+
+    private static String decodeUriComponent(String string) {
+        try {
+<span class="fc" id="L141">            return URLDecoder.decode(string, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L142">        } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L143">            throw new IllegalStateException(e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

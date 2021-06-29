@@ -1,0 +1,16 @@
+org.jmad.modelpack.cache
+org.jmad.modelpack.cache.impl
+org.jmad.modelpack.connect
+org.jmad.modelpack.connect.classpath
+org.jmad.modelpack.connect.classpath.conf
+org.jmad.modelpack.connect.gitlab
+org.jmad.modelpack.connect.gitlab.conf
+org.jmad.modelpack.connect.gitlab.domain
+org.jmad.modelpack.connect.gitlab.internals
+org.jmad.modelpack.connect.localfile
+org.jmad.modelpack.connect.localfile.conf
+org.jmad.modelpack.domain
+org.jmad.modelpack.service
+org.jmad.modelpack.service.conf
+org.jmad.modelpack.service.impl
+org.jmad.modelpack.util

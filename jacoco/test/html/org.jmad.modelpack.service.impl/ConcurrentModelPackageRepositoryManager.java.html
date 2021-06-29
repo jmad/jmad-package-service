@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConcurrentModelPackageRepositoryManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.service.impl</a> &gt; <span class="el_source">ConcurrentModelPackageRepositoryManager.java</span></div><h1>ConcurrentModelPackageRepositoryManager.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.service.impl;
+
+import static java.util.Collections.emptyMap;
+import static org.jmad.modelpack.service.JMadModelPackageRepositoryManager.EnableState.ENABLED;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.service.JMadModelPackageRepositoryManager;
+import org.jmad.modelpack.service.JMadModelPackageRepositoryProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.ReplayProcessor;
+
+<span class="nc" id="L25">public class ConcurrentModelPackageRepositoryManager</span>
+        implements JMadModelPackageRepositoryManager, JMadModelPackageRepositoryProvider {
+
+<span class="nc" id="L28">    private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentModelPackageRepositoryManager.class);</span>
+
+<span class="nc" id="L30">    private final Map&lt;JMadModelPackageRepository, EnableState&gt; repositories = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="nc" id="L32">    private final ReplayProcessor&lt;Map&lt;JMadModelPackageRepository, EnableState&gt;&gt; states = ReplayProcessor</span>
+<span class="nc" id="L33">            .cacheLastOrDefault(emptyMap());</span>
+
+    @Override
+    public void remove(JMadModelPackageRepository repository) {
+<span class="nc" id="L37">        repositories.remove(repository);</span>
+<span class="nc" id="L38">        LOGGER.info(&quot;Removed repository {}.&quot;, repository);</span>
+<span class="nc" id="L39">        publishState();</span>
+<span class="nc" id="L40">    }</span>
+
+    @Override
+    public void enable(JMadModelPackageRepository repository) {
+<span class="nc" id="L44">        repositories.put(repository, EnableState.ENABLED);</span>
+<span class="nc" id="L45">        LOGGER.info(&quot;Enabled repository {}.&quot;, repository);</span>
+<span class="nc" id="L46">        publishState();</span>
+<span class="nc" id="L47">    }</span>
+
+    @Override
+    public void disable(JMadModelPackageRepository repository) {
+<span class="nc" id="L51">        repositories.put(repository, EnableState.DISABLED);</span>
+<span class="nc" id="L52">        LOGGER.info(&quot;Disabled repository {}.&quot;, repository);</span>
+<span class="nc" id="L53">        publishState();</span>
+<span class="nc" id="L54">    }</span>
+
+    @Override
+    public Flux&lt;JMadModelPackageRepository&gt; enabledRepositories() {
+        // @formatter:off
+<span class="nc" id="L59">        return Flux.fromIterable(repositories.entrySet())</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                .filter(e -&gt; ENABLED == e.getValue())</span>
+<span class="nc" id="L61">                .map(Entry::getKey);</span>
+        // @formatter:on
+    }
+
+    private void publishState() {
+<span class="nc" id="L66">        states.onNext(ImmutableMap.copyOf(repositories));</span>
+<span class="nc" id="L67">    }</span>
+
+    @Override
+    public Flux&lt;Map&lt;JMadModelPackageRepository, EnableState&gt;&gt; state() {
+<span class="nc" id="L71">        return this.states;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

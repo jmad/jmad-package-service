@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModelPackageFileCacheImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.cache.impl</a> &gt; <span class="el_source">ModelPackageFileCacheImpl.java</span></div><h1>ModelPackageFileCacheImpl.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.cache.impl;
+
+import static cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil.ZIP_FILE_EXTENSION;
+import static cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil.isZipFileName;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import cern.accsoft.steering.jmad.util.StreamUtil;
+import cern.accsoft.steering.jmad.util.TempFileUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.jmad.modelpack.cache.ModelPackageFileCache;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+public class ModelPackageFileCacheImpl implements ModelPackageFileCache {
+
+<span class="nc" id="L43">    private static final Logger LOGGER = LoggerFactory.getLogger(ModelPackageFileCacheImpl.class);</span>
+    private static final String CACHE_SUBDIR = &quot;package-cache&quot;;
+
+    private final File cacheDir;
+<span class="nc" id="L47">    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();</span>
+
+    /**
+     * contains all the files which were are used. The purpose here is to return the same file instances each time, so
+     * that we can lock on them for checking if they exist or when writing to them. This way, at least we should be able
+     * to avoid concurrency issues within the same instance of this cache.
+     * &lt;p&gt;
+     * ... Concurrency issues within different processes is another story and is not yet addressed.
+     */
+<span class="nc" id="L56">    private final Map&lt;ModelPackageVariant, File&gt; packageFiles = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L58">    public ModelPackageFileCacheImpl(TempFileUtil tempFileUtil) {</span>
+<span class="nc" id="L59">        requireNonNull(tempFileUtil, &quot;tempFileUtil must not be null&quot;);</span>
+<span class="nc" id="L60">        this.cacheDir = tempFileUtil.getOutputDir(CACHE_SUBDIR);</span>
+<span class="nc" id="L61">    }</span>
+
+    @Override
+    public Mono&lt;File&gt; fileFor(ModelPackageVariant packageVariant,
+            Function&lt;ModelPackageVariant, Mono&lt;Resource&gt;&gt; zipFileResourceCallback) {
+<span class="nc" id="L66">        File packageFile = packageFile(packageVariant);</span>
+<span class="nc" id="L67">        synchronized (packageFile) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (packageFile.exists()) {</span>
+<span class="nc" id="L69">                return Mono.just(packageFile);</span>
+            }
+
+            // @formatter:off
+<span class="nc" id="L73">            return Mono.just(packageVariant)</span>
+<span class="nc" id="L74">                .publishOn(Schedulers.elastic())</span>
+<span class="nc" id="L75">                .doOnNext(v -&gt; LOGGER.info(&quot;Downloading model package {} to temp file {}.&quot;, v, packageFile))</span>
+<span class="nc" id="L76">                .flatMap(zipFileResourceCallback)</span>
+<span class="nc" id="L77">                .map(r -&gt; {</span>
+<span class="nc" id="L78">                        synchronized (packageFile) {</span>
+<span class="nc" id="L79">                            return downloadFile(packageVariant, r, packageFile);</span>
+                        }
+                    });
+            // @formatter:on
+        }
+    }
+
+    @Override
+    public Flux&lt;ModelPackageVariant&gt; cachedPackageVariants() {
+        // @formatter:off
+<span class="nc" id="L89">        return Flux.fromIterable(existingJsonFiles())</span>
+<span class="nc" id="L90">                    .map(this::readMetaInfoFrom)</span>
+<span class="nc" id="L91">                    .filter(Optional::isPresent)</span>
+<span class="nc" id="L92">                    .map(Optional::get);</span>
+        // @formatter:on
+    }
+
+    private File downloadFile(ModelPackageVariant packageVariant, Resource zipResource, File file) {
+        try {
+<span class="nc" id="L98">            LOGGER.info(&quot;Storing model package {} to temp file {}.&quot;, packageVariant, file.getAbsoluteFile());</span>
+<span class="nc" id="L99">            StreamUtil.toFile(zipResource.getInputStream(), file);</span>
+<span class="nc" id="L100">            LOGGER.info(&quot;Successfully stored model package to file {}.&quot;, file.getAbsoluteFile());</span>
+<span class="nc" id="L101">            writeMetaInfo(packageVariant);</span>
+<span class="nc" id="L102">            return file;</span>
+<span class="nc" id="L103">        } catch (IOException e) {</span>
+<span class="nc" id="L104">            throw new IllegalStateException(&quot;Unable to download package file for package '&quot; + packageVariant + &quot;'&quot;);</span>
+        }
+    }
+
+    private File packageFile(ModelPackageVariant packageVariant) {
+<span class="nc" id="L109">        synchronized (packageFiles) {</span>
+<span class="nc" id="L110">            File file = packageFiles.get(packageVariant);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            if (file != null) {</span>
+<span class="nc" id="L112">                return file;</span>
+            }
+<span class="nc" id="L114">            file = zipFileFor(packageVariant);</span>
+<span class="nc" id="L115">            packageFiles.put(packageVariant, file);</span>
+<span class="nc" id="L116">            return file;</span>
+        }
+    }
+
+    private File zipFileFor(ModelPackageVariant packageVariant) {
+<span class="nc" id="L121">        return new File(cacheDir, zipFileName(packageVariant));</span>
+    }
+
+    private static String zipFileName(ModelPackageVariant packageVariant) {
+<span class="nc" id="L125">        return packageVariant.fullName() + ZIP_FILE_EXTENSION;</span>
+    }
+
+    private File jsonFileFor(File zipFile) {
+<span class="nc" id="L129">        return new File(zipFile.getAbsolutePath() + &quot;.json&quot;);</span>
+    }
+
+    @Override
+    public Mono&lt;Void&gt; clear() {
+<span class="nc" id="L134">        return Mono.fromRunnable(() -&gt; {</span>
+<span class="nc" id="L135">            synchronized (packageFiles) {</span>
+<span class="nc" id="L136">                Set&lt;ModelPackageVariant&gt; deletedKeys = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L137">                packageFiles.forEach((key, file) -&gt; {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                    if (deleteCacheEntry(file)) {</span>
+<span class="nc" id="L139">                        deletedKeys.add(key);</span>
+                    }
+<span class="nc" id="L141">                });</span>
+<span class="nc" id="L142">                deletedKeys.forEach(packageFiles::remove);</span>
+
+                /* Also try to remove the rest of the files, even if they were not in the map */
+<span class="nc" id="L145">                cachedZipFiles().forEach(this::deleteCacheEntry);</span>
+
+<span class="nc" id="L147">                LOGGER.info(&quot;Caches cleared !&quot;);</span>
+<span class="nc" id="L148">            }</span>
+<span class="nc" id="L149">        });</span>
+    }
+
+    private Set&lt;File&gt; cachedZipFiles() {
+        // @formatter:off
+<span class="nc" id="L154">        return Arrays.stream(cacheDir.listFiles())</span>
+<span class="nc" id="L155">                .filter(f -&gt; isZipFileName(f.getName()))</span>
+<span class="nc" id="L156">                .collect(toSet());</span>
+        // @formatter:on
+    }
+
+    private boolean deleteCacheEntry(File zipFile) {
+<span class="nc" id="L161">        deleteFile(jsonFileFor(zipFile));</span>
+<span class="nc" id="L162">        return deleteFile(zipFile);</span>
+    }
+
+    private Set&lt;File&gt; existingJsonFiles() {
+        // @formatter:off
+<span class="nc" id="L167">       return cachedZipFiles().stream()</span>
+<span class="nc" id="L168">               .map(this::jsonFileFor)</span>
+<span class="nc" id="L169">               .filter(File::exists)</span>
+<span class="nc" id="L170">               .collect(Collectors.toSet());</span>
+        // @formatter:on
+    }
+
+    private boolean deleteFile(File file) {
+        try {
+<span class="nc" id="L176">            Files.delete(file.toPath());</span>
+<span class="nc" id="L177">            LOGGER.info(&quot;Deleted file {}.&quot;, file);</span>
+<span class="nc" id="L178">            return true;</span>
+<span class="nc" id="L179">        } catch (IOException e) {</span>
+<span class="nc" id="L180">            LOGGER.warn(&quot;File {} could not be deleted.&quot;, file, e);</span>
+<span class="nc" id="L181">            return false;</span>
+        }
+    }
+
+    private void writeMetaInfo(ModelPackageVariant packageVariant) {
+<span class="nc" id="L186">        File file = jsonFileFor(zipFileFor(packageVariant));</span>
+
+<span class="nc" id="L188">        try (Writer writer = new FileWriter(file)) {</span>
+<span class="nc" id="L189">            gson.toJson(packageVariant, writer);</span>
+<span class="nc" id="L190">            LOGGER.info(&quot;Successfully stored meta info for packageVariant {} in file {}.&quot;, packageVariant, file);</span>
+<span class="nc" id="L191">        } catch (IOException e) {</span>
+<span class="nc" id="L192">            LOGGER.error(&quot;Meta info for packageVariant {} could not be written to file {}.&quot;, packageVariant, file, e);</span>
+<span class="nc" id="L193">        }</span>
+<span class="nc" id="L194">    }</span>
+
+    private Optional&lt;ModelPackageVariant&gt; readMetaInfoFrom(File jsonFile) {
+<span class="nc" id="L197">        try (Reader writer = new FileReader(jsonFile)) {</span>
+<span class="nc" id="L198">            ModelPackageVariant packageVariant = gson.fromJson(writer, ModelPackageVariant.class);</span>
+<span class="nc" id="L199">            LOGGER.info(&quot;Successfully read meta info for packageVariant {} from file {}.&quot;, packageVariant, jsonFile);</span>
+<span class="nc" id="L200">            return Optional.of(packageVariant);</span>
+<span class="nc" id="L201">        } catch (IOException e) {</span>
+<span class="nc" id="L202">            LOGGER.error(&quot;Meta info could not be read from file {}.&quot;, jsonFile, e);</span>
+<span class="nc" id="L203">            return Optional.empty();</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

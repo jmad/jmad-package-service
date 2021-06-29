@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocalFileModelPackageConnector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.connect.localfile</a> &gt; <span class="el_source">LocalFileModelPackageConnector.java</span></div><h1>LocalFileModelPackageConnector.java</h1><pre class="source lang-java linenums">package org.jmad.modelpack.connect.localfile;
+
+import cern.accsoft.steering.jmad.modeldefs.domain.JMadModelDefinition;
+import cern.accsoft.steering.jmad.modeldefs.io.impl.ModelDefinitionUtil;
+import cern.accsoft.steering.jmad.service.JMadService;
+import org.jmad.modelpack.connect.DirectModelPackageConnector;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackage;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.Variant;
+import org.jmad.modelpack.domain.VariantType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Collections;
+import java.util.Set;
+
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+import static org.jmad.modelpack.connect.ConnectorUriSchemes.LOCAL_FILE_SCHEME;
+
+<span class="fc" id="L27">public class LocalFileModelPackageConnector implements DirectModelPackageConnector {</span>
+<span class="fc" id="L28">    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileModelPackageConnector.class);</span>
+<span class="fc" id="L29">    private static final Variant LOCAL_VARIANT = new Variant(&quot;LOCAL&quot;, VariantType.RELEASE);</span>
+    private static final String LOCAL_NAME_PREFIX = &quot;LOCAL-&quot;;
+
+    @Autowired
+    private JMadService jMadService;
+
+    @Override
+    public Flux&lt;JMadModelDefinition&gt; modelDefinitionsFor(ModelPackageVariant modelPackage) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (!canHandle(modelPackage.modelPackage().repository())) {</span>
+<span class="fc" id="L38">            return Flux.empty();</span>
+        }
+<span class="fc" id="L40">        String pathToModelPack = modelPackage.modelPackage().uri().getPath();</span>
+        try {
+<span class="fc" id="L42">            File modelPackDir = new File(pathToModelPack);</span>
+<span class="fc" id="L43">            return Flux.fromIterable(jMadService.getModelDefinitionImporter().importModelDefinitions(modelPackDir));</span>
+<span class="nc" id="L44">        } catch (Exception e) {</span>
+<span class="nc" id="L45">            LOGGER.error(&quot;Error loading LOCAL modelpack from '{}'&quot;, pathToModelPack, e);</span>
+<span class="nc" id="L46">            return Flux.error(e);</span>
+        }
+    }
+
+    @Override
+    public Flux&lt;ModelPackageVariant&gt; availablePackages(JMadModelPackageRepository repository) {
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (!canHandle(repository)) {</span>
+<span class="fc" id="L53">            return Flux.empty();</span>
+        }
+        try {
+<span class="fc" id="L56">            File dir = new File(repository.uri().getPath());</span>
+<span class="fc" id="L57">            LOGGER.info(&quot;Searching for local models in {}&quot;, dir);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (!dir.isDirectory()) {</span>
+<span class="fc" id="L59">                return Flux.error(new IllegalArgumentException(dir.getAbsolutePath() + &quot; is not a directory.&quot;));</span>
+            }
+<span class="fc" id="L61">            return Flux.fromStream( //</span>
+<span class="fc" id="L62">                    stream(requireNonNull(dir.listFiles(File::isDirectory))) //</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                            .filter(sub -&gt; !ModelDefinitionUtil.modelDefinitionFilesBelow(sub.toPath()).isEmpty())</span>
+<span class="fc" id="L64">                            .map(File::getName) //</span>
+<span class="fc" id="L65">                            .map(n -&gt; modelPackage(n, repository)));</span>
+<span class="nc" id="L66">        } catch (Exception e) {</span>
+<span class="nc" id="L67">            LOGGER.error(&quot;Error loading LOCAL repository '{}'&quot;, repository.uri(), e);</span>
+<span class="nc" id="L68">            return Flux.error(e);</span>
+        }
+    }
+
+    @Override
+    public Mono&lt;ModelPackageVariant&gt; packageFromUri(URI uri) {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (!canHandle(uri)) {</span>
+<span class="fc" id="L75">            return Mono.empty();</span>
+        }
+        try {
+<span class="fc" id="L78">            File path = new File(uri.normalize().getPath());</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (!path.exists()) {</span>
+<span class="fc" id="L80">                return Mono.error(new IllegalArgumentException(&quot;Can not find directory &quot; + path.getAbsolutePath()));</span>
+            }
+<span class="fc" id="L82">            LOGGER.info(&quot;Searching for local models in {}&quot;, path);</span>
+<span class="fc" id="L83">            File parent = path.getParentFile();</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            if (!parent.isDirectory()) {</span>
+<span class="nc" id="L85">                return Mono.error(new IllegalArgumentException(parent.getAbsolutePath() + &quot; is not a directory&quot;));</span>
+            }
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">            if (ModelDefinitionUtil.modelDefinitionFilesBelow(parent.toPath()).isEmpty()) {</span>
+<span class="nc" id="L88">                return Mono.error(new IllegalArgumentException(&quot;No JMad models found in &quot; + path));</span>
+            }
+<span class="fc" id="L90">            JMadModelPackageRepository repo = JMadModelPackageRepository.fromUri(new URI(LOCAL_FILE_SCHEME, null,</span>
+<span class="fc" id="L91">                    parent.toPath().toUri().getRawPath() + &quot;/&quot;, null));</span>
+<span class="fc" id="L92">            return Mono.just(modelPackage(path.getName(), repo));</span>
+<span class="nc" id="L93">        } catch (Exception e) {</span>
+<span class="nc" id="L94">            LOGGER.error(&quot;Error loading LOCAL model pack from URI '{}'&quot;, uri, e);</span>
+<span class="nc" id="L95">            return Mono.error(e);</span>
+        }
+    }
+
+    @Override
+    public Set&lt;String&gt; handledSchemes() {
+<span class="fc" id="L101">        return Collections.singleton(LOCAL_FILE_SCHEME);</span>
+    }
+
+    private ModelPackageVariant modelPackage(String name, JMadModelPackageRepository repository) {
+<span class="fc" id="L105">        URI modelPackUri = repository.uri().resolve(name);</span>
+<span class="fc" id="L106">        ModelPackage modelPackage = new ModelPackage(LOCAL_NAME_PREFIX + name, repository, modelPackUri);</span>
+<span class="fc" id="L107">        return new ModelPackageVariant(modelPackUri, modelPackage, LOCAL_VARIANT);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

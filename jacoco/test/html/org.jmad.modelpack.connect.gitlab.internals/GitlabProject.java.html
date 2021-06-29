@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GitlabProject.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jmad-modelpack-service</a> &gt; <a href="index.source.html" class="el_package">org.jmad.modelpack.connect.gitlab.internals</a> &gt; <span class="el_source">GitlabProject.java</span></div><h1>GitlabProject.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (c) 2018 European Organisation for Nuclear Research (CERN), All Rights Reserved.
+ */
+
+package org.jmad.modelpack.connect.gitlab.internals;
+
+import org.jmad.modelpack.connect.gitlab.domain.GitlabModelPackage;
+import org.jmad.modelpack.connect.gitlab.domain.GitlabVariant;
+import org.jmad.modelpack.domain.JMadModelPackageRepository;
+import org.jmad.modelpack.domain.ModelPackage;
+import org.jmad.modelpack.domain.ModelPackageVariant;
+import org.jmad.modelpack.domain.Variant;
+
+import java.util.List;
+import java.util.Objects;
+
+<span class="fc" id="L17">public class GitlabProject {</span>
+
+    public String id;
+    public String name;
+    public String description;
+    public List&lt;String&gt; tag_list;
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L27" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L28">        GitlabProject that = (GitlabProject) o;</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        return Objects.equals(id, that.id) &amp;&amp;</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">                Objects.equals(name, that.name) &amp;&amp;</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">                Objects.equals(description, that.description) &amp;&amp;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                Objects.equals(tag_list, that.tag_list);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L37">        return Objects.hash(id, name, description, tag_list);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L42">        return &quot;GitlabProject{&quot; +</span>
+                &quot;id='&quot; + id + '\'' +
+                &quot;, name='&quot; + name + '\'' +
+                &quot;, description='&quot; + description + '\'' +
+                &quot;, tag_list=&quot; + tag_list +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
