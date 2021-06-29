@@ -4,6 +4,12 @@
 
 package org.jmad.modelpack.service.conf;
 
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabOld;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabPro;
+import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
+import static org.jmad.modelpack.domain.JMadModelRepositories.defaultLocalFileRepository;
+import static org.jmad.modelpack.domain.JMadModelRepositories.internal;
+
 import cern.accsoft.steering.jmad.service.JMadService;
 import cern.accsoft.steering.jmad.util.JMadPreferences;
 import cern.accsoft.steering.jmad.util.TempFileUtilImpl;
@@ -17,12 +23,6 @@ import org.jmad.modelpack.service.impl.ConcurrentModelPackageRepositoryManager;
 import org.jmad.modelpack.service.impl.MultiConnectorModelPackageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-
-import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabOld;
-import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabPro;
-import static org.jmad.modelpack.domain.JMadModelRepositories.cernGitlabTesting;
-import static org.jmad.modelpack.domain.JMadModelRepositories.defaultLocalFileRepository;
-import static org.jmad.modelpack.domain.JMadModelRepositories.internal;
 
 /**
  * Spring configuration that only creates the beans for the jmad-modelpack-service. It expects all the necessary beans
@@ -46,10 +46,10 @@ public class JMadModelPackageServiceConfiguration {
     @Bean
     public ConcurrentModelPackageRepositoryManager packageRepositoryManager() {
         ConcurrentModelPackageRepositoryManager manager = new ConcurrentModelPackageRepositoryManager();
-        manager.enable(cernGitlabOld());
         manager.enable(cernGitlabPro());
         manager.enable(internal());
         defaultLocalFileRepository().ifPresent(manager::enable);
+        manager.disable(cernGitlabOld());
         manager.disable(cernGitlabTesting());
         return manager;
     }
